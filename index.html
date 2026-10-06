@@ -255,6 +255,107 @@
       border: 2px solid #FAF5EE;
     }
     ::-webkit-scrollbar-thumb:hover { background: #B88556; }
+
+    /* ================= MOBILE FIRST IMPROVEMENTS ================= */
+
+    /* Touch ripple feedback for mobile (replaces mouse hover effect) */
+    .touch-ripple {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%) scale(0);
+      animation: touchRippleAnim 0.65s ease-out forwards;
+    }
+    @keyframes touchRippleAnim {
+      0%   { transform: translate(-50%, -50%) scale(0); opacity: 0.75; }
+      60%  { transform: translate(-50%, -50%) scale(1); opacity: 0.35; }
+      100% { transform: translate(-50%, -50%) scale(1.4); opacity: 0; }
+    }
+
+    /* Better touch targets — minimum 44px on mobile */
+    @media (max-width: 767px) {
+      button, a, .roast-pill, .filter-btn, .quick-add-btn {
+        min-height: 44px;
+      }
+
+      /* Hero heading — readable on small screens */
+      h1.font-display {
+        font-size: clamp(2.4rem, 10vw, 4rem) !important;
+        line-height: 1.12 !important;
+      }
+
+      /* Navbar — hide "Cafe Ambience" text on very small screens */
+      #soundText { display: none !important; }
+
+      /* Hero coffee card — compact on phones */
+      #hero3DCard {
+        max-width: 280px !important;
+        aspect-ratio: 4/4 !important;
+      }
+
+      /* Disable heavy 3D tilt on touch to prevent jitter */
+      .tilt-card {
+        transform: none !important;
+        transition: box-shadow 0.3s ease !important;
+      }
+
+      /* Make steam canvas smaller on mobile */
+      #steamCanvas {
+        width: 200px !important;
+        height: 160px !important;
+        top: -70px !important;
+      }
+
+      /* Menu grid — 1 column on phones, 2 on small tablets */
+      #menuContainer {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 1rem !important;
+      }
+
+      /* Metric row — reduce font size */
+      .font-display.text-3xl { font-size: 1.5rem !important; }
+
+      /* Floating badges on hero — tuck in on mobile */
+      .animate-float-slow {
+        top: -0.5rem !important;
+        right: -0.5rem !important;
+      }
+      .animate-float-delay {
+        bottom: -0.75rem !important;
+        left: -0.5rem !important;
+      }
+
+      /* Cart sheet full-width on mobile */
+      #cartSheet {
+        max-width: 100% !important;
+      }
+
+      /* Recipe modal full-height on mobile */
+      #modalSheet {
+        max-width: 100% !important;
+        height: 95vh !important;
+        border-radius: 1.5rem 1.5rem 0 0 !important;
+      }
+
+      /* Better padding on sections */
+      .max-w-7xl { padding-left: 1rem !important; padding-right: 1rem !important; }
+    }
+
+    /* Very small phones (< 380px) */
+    @media (max-width: 380px) {
+      #menuContainer {
+        grid-template-columns: 1fr !important;
+      }
+      .roast-pill { font-size: 0.65rem !important; padding: 0.35rem 0.4rem !important; }
+    }
+
+    /* Active press state for touch — visual feedback since no hover */
+    @media (hover: none) {
+      .tilt-card:active { transform: scale(0.97) !important; box-shadow: 0 4px 20px rgba(26, 17, 11, 0.25) !important; }
+      a:active, button:active { opacity: 0.8; }
+      .roast-pill:active { transform: scale(0.95); }
+    }
   </style>
 </head>
 <body class="antialiased selection:bg-caramel selection:text-roast">
@@ -2375,6 +2476,82 @@
         requestAnimationFrame(renderCursorSystem);
       }
       renderCursorSystem();
+    })();
+
+    /* ==========================================================
+       13. MOBILE TOUCH EXPERIENCE (replaces mouse effects on phones)
+       ========================================================== */
+    (function initMobileTouchExperience() {
+      // Only run on touch/mobile devices
+      const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
+      if (!isTouchDevice) return;
+
+      // Disable 3D tilt on touch devices (causes jitter/jumpiness)
+      document.querySelectorAll('.tilt-card').forEach(card => {
+        card.removeEventListener('mousemove', null);
+      });
+
+      // Coffee-themed touch ripple: warm crema ring + golden steam burst on tap
+      const RIPPLE_COLORS = [
+        { ring: 'rgba(212, 163, 115,', fill: 'rgba(227, 168, 87,' },
+        { ring: 'rgba(234, 219, 206,', fill: 'rgba(212, 163, 115,' },
+        { ring: 'rgba(78, 49, 35,',   fill: 'rgba(212, 163, 115,' },
+      ];
+
+      function spawnTouchRipple(x, y) {
+        const palette = RIPPLE_COLORS[Math.floor(Math.random() * RIPPLE_COLORS.length)];
+
+        // Outer crema ring ripple
+        const outer = document.createElement('div');
+        outer.className = 'touch-ripple';
+        outer.style.cssText = `
+          left: ${x}px;
+          top: ${y}px;
+          width: 90px;
+          height: 90px;
+          border: 2px solid ${palette.ring} 0.8);
+          background: ${palette.fill} 0.12);
+          box-shadow: 0 0 18px ${palette.fill} 0.4);
+        `;
+        document.body.appendChild(outer);
+
+        // Inner steam core
+        const inner = document.createElement('div');
+        inner.className = 'touch-ripple';
+        inner.style.cssText = `
+          left: ${x}px;
+          top: ${y}px;
+          width: 36px;
+          height: 36px;
+          background: radial-gradient(circle, ${palette.fill} 0.7) 0%, ${palette.fill} 0) 80%);
+          animation-duration: 0.45s;
+        `;
+        document.body.appendChild(inner);
+
+        // Clean up after animation
+        setTimeout(() => { outer.remove(); inner.remove(); }, 700);
+      }
+
+      // Listen for taps anywhere on the page
+      document.addEventListener('touchstart', (e) => {
+        const t = e.touches[0];
+        if (t) spawnTouchRipple(t.clientX, t.clientY);
+      }, { passive: true });
+
+      // Swipe-to-scroll momentum — keep it native, do nothing extra
+
+      // Bottom sheet modal — on mobile open from bottom
+      const modalSheet = document.getElementById('modalSheet');
+      if (modalSheet) {
+        modalSheet.style.position = 'fixed';
+        modalSheet.style.bottom = '0';
+        modalSheet.style.top = 'auto';
+        modalSheet.style.left = '0';
+        modalSheet.style.right = '0';
+        modalSheet.style.height = '90vh';
+        modalSheet.style.overflowY = 'auto';
+        modalSheet.style.borderRadius = '1.5rem 1.5rem 0 0';
+      }
     })();
   </script>
 </body>
