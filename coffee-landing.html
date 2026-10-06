@@ -1,0 +1,2381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Brew & Bloom — Artisan Coffee & Hearth Bakery</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            roast: '#1A110B',
+            bark: '#2B1A12',
+            mocha: '#4E3123',
+            caramel: '#D4A373',
+            gold: '#E3A857',
+            latte: '#EADBCE',
+            cream: '#FAF5EE',
+            sage: '#7C9082',
+            foam: '#FFFDF9',
+          },
+          fontFamily: {
+            display: ['"Playfair Display"', 'serif'],
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          animation: {
+            'float-slow': 'float 5s ease-in-out infinite',
+            'float-delay': 'float 5s ease-in-out 2.5s infinite',
+            'pulse-glow': 'pulseGlow 3s ease-in-out infinite',
+          },
+          keyframes: {
+            float: {
+              '0%, 100%': { transform: 'translateY(0px)' },
+              '50%': { transform: 'translateY(-12px)' },
+            },
+            pulseGlow: {
+              '0%, 100%': { opacity: '0.4', transform: 'scale(1)' },
+              '50%': { opacity: '0.8', transform: 'scale(1.05)' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: #FAF5EE;
+      color: #2B1A12;
+      overflow-x: hidden;
+    }
+
+    /* Ambient mesh background */
+    .hero-mesh {
+      background: radial-gradient(circle at 80% 20%, rgba(212, 163, 115, 0.25) 0%, transparent 45%),
+                  radial-gradient(circle at 20% 80%, rgba(78, 49, 35, 0.5) 0%, transparent 55%),
+                  linear-gradient(145deg, #1A110B 0%, #2B1A12 55%, #3B2418 100%);
+    }
+
+    /* ================= SUBTLE LUXURY COFFEE & BURLAP TEXTURE ================= */
+    .texture-roast {
+      position: relative;
+    }
+    .texture-roast::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: 
+        /* Coffee bean silhouette motif */
+        url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M15 8c-4.4 0-8 3.6-8 8 0 5.5 4.8 9.6 8 9.6s8-4.1 8-9.6c0-4.4-3.6-8-8-8zm0 14.4c-2-1.2-2.8-3.2-2.8-5.6s.8-4 2.8-4 2.8 1.6 2.8 4-.8 4.4-2.8 5.6zm30 22c-4.4 0-8 3.6-8 8 0 5.5 4.8 9.6 8 9.6s8-4.1 8-9.6c0-4.4-3.6-8-8-8zm0 14.4c-2-1.2-2.8-3.2-2.8-5.6s.8-4 2.8-4 2.8 1.6 2.8 4-.8 4.4-2.8 5.6z' fill='%23D4A373' fill-opacity='0.055' fill-rule='evenodd'/%3E%3C/svg%3E"),
+        /* Subtle woven linen / burlap texture */
+        url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h20v1H0zM0 10h20v1H0zM0 0v20h1V0zM10 0v20h1V0z' fill='%23FFFFFF' fill-opacity='0.025'/%3E%3C/svg%3E");
+      background-repeat: repeat;
+      pointer-events: none;
+      z-index: 1;
+    }
+    .texture-roast > * {
+      position: relative;
+      z-index: 2;
+    }
+
+    /* 3D Perspective Stage & Tilt Cards */
+    .perspective-stage {
+      perspective: 1200px;
+    }
+
+    .tilt-card {
+      transform-style: preserve-3d;
+      transition: transform 0.15s ease-out, box-shadow 0.25s ease-out;
+      will-change: transform;
+    }
+
+    .tilt-card-content {
+      transform: translateZ(24px);
+    }
+
+    .card-glare {
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255, 255, 255, 0.22) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: 10;
+    }
+    .tilt-card:hover .card-glare {
+      opacity: 1;
+    }
+
+    /* Procedural Steam Canvas */
+    #steamCanvas {
+      position: absolute;
+      top: -110px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 320px;
+      height: 240px;
+      pointer-events: none;
+      z-index: 20;
+    }
+
+    /* ================= COFFEE SHOP MOUSE HOVER & INTERACTION ================= */
+    #coffeeCursorCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    #baristaRing {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(212, 163, 115, 0.7);
+      background: radial-gradient(circle, rgba(212, 163, 115, 0.12) 0%, transparent 75%);
+      box-shadow: 0 0 14px rgba(212, 163, 115, 0.25);
+      pointer-events: none;
+      z-index: 9998;
+      transform: translate(-50%, -50%);
+      transition: width 0.22s cubic-bezier(0.2, 0.9, 0.3, 1.2),
+                  height 0.22s cubic-bezier(0.2, 0.9, 0.3, 1.2),
+                  border-color 0.2s ease,
+                  background-color 0.2s ease,
+                  box-shadow 0.2s ease,
+                  opacity 0.25s ease;
+      opacity: 0;
+      will-change: transform, width, height;
+    }
+
+    #baristaRing.active-hover {
+      width: 58px;
+      height: 58px;
+      border-color: #E3A857;
+      background: radial-gradient(circle, rgba(227, 168, 87, 0.24) 0%, rgba(212, 163, 115, 0.08) 60%, transparent 80%);
+      box-shadow: 0 0 24px rgba(227, 168, 87, 0.55), inset 0 0 10px rgba(227, 168, 87, 0.25);
+    }
+
+    .barista-center-dot {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 5px;
+      height: 5px;
+      background: #D4A373;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 0 6px #E3A857;
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+
+    #baristaRing.active-hover .barista-center-dot {
+      transform: translate(-50%, -50%) scale(1.6);
+      background: #E3A857;
+    }
+
+    #baristaHoverTag {
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%) translateY(8px);
+      white-space: nowrap;
+      background: rgba(26, 17, 11, 0.92);
+      backdrop-filter: blur(8px);
+      color: #FAF5EE;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      padding: 3px 9px;
+      border-radius: 9999px;
+      border: 1px solid rgba(212, 163, 115, 0.45);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    #baristaRing.active-hover #baristaHoverTag {
+      opacity: 1;
+      transform: translateX(-50%) translateY(12px);
+    }
+
+    /* Glassmorphism */
+    .glass-card {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.7);
+    }
+    .glass-dark {
+      background: rgba(26, 17, 11, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(212, 163, 115, 0.25);
+    }
+
+    /* Scroll reveal */
+    .reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: all 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Pulse badge */
+    @keyframes pulseRing {
+      0% { box-shadow: 0 0 0 0 rgba(212, 163, 115, 0.7); }
+      70% { box-shadow: 0 0 0 14px rgba(212, 163, 115, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(212, 163, 115, 0); }
+    }
+    .pulse-ring {
+      animation: pulseRing 2.2s infinite;
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #FAF5EE; }
+    ::-webkit-scrollbar-thumb {
+      background: #D4A373;
+      border-radius: 9999px;
+      border: 2px solid #FAF5EE;
+    }
+    ::-webkit-scrollbar-thumb:hover { background: #B88556; }
+  </style>
+</head>
+<body class="antialiased selection:bg-caramel selection:text-roast">
+
+  <!-- ================= NAVBAR ================= -->
+  <nav id="navbar" class="fixed top-0 left-0 right-0 z-40 transition-all duration-300 py-4 px-6 pointer-events-none">
+    <div class="max-w-7xl mx-auto flex items-center justify-between glass-card rounded-full px-6 py-3 shadow-lg shadow-roast/5 border border-white/60 pointer-events-auto">
+      
+      <!-- Logo -->
+      <a href="#" class="flex items-center gap-3 group">
+        <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-mocha to-caramel flex items-center justify-center text-foam shadow-md shadow-caramel/30 group-hover:rotate-12 transition-transform duration-300">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 8h1a4 4 0 0 1 0 8h-1"/>
+            <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
+            <line x1="6" y1="1" x2="6" y2="4"/>
+            <line x1="10" y1="1" x2="10" y2="4"/>
+            <line x1="14" y1="1" x2="14" y2="4"/>
+          </svg>
+        </div>
+        <div>
+          <span class="font-display text-xl font-bold tracking-tight text-bark block leading-none">Brew & Bloom</span>
+          <span class="text-[10px] uppercase tracking-widest text-caramel font-semibold">Artisan Roastery</span>
+        </div>
+      </a>
+
+      <!-- Navigation Links -->
+      <div class="hidden md:flex items-center gap-8 text-sm font-semibold text-mocha">
+        <a href="#about" class="hover:text-caramel transition-colors">Philosophy</a>
+        <a href="#menu" class="hover:text-caramel transition-colors flex items-center gap-1.5">
+          <span>The Menu</span>
+          <span class="bg-caramel/20 text-caramel text-[10px] px-2 py-0.5 rounded-full font-bold">Interactive</span>
+        </a>
+        <a href="#brewing-timer" class="hover:text-caramel transition-colors">Brew Timer</a>
+        <a href="#reviews" class="hover:text-caramel transition-colors">Reviews</a>
+        <a href="#contact" class="hover:text-caramel transition-colors">Visit</a>
+      </div>
+
+      <!-- Quick Actions (Ambient Audio + Order Bag) -->
+      <div class="flex items-center gap-2.5">
+        
+        <!-- Smooth Relaxing Cafe Music & Coffee Sounds Toggle -->
+        <button id="ambientSoundBtn" class="flex items-center gap-2 px-3.5 py-2 rounded-full text-xs font-semibold bg-latte/50 hover:bg-latte text-bark transition-all shadow-sm cursor-pointer" title="Toggle relaxing smooth cafe vibes & authentic coffee shop sounds">
+          <!-- Animated Equalizer Bars -->
+          <span id="soundEqualizer" class="hidden items-end gap-0.5 h-3">
+            <span class="w-0.5 h-3 bg-roast rounded-full animate-bounce"></span>
+            <span class="w-0.5 h-2 bg-roast rounded-full animate-bounce" style="animation-delay: 0.15s"></span>
+            <span class="w-0.5 h-2.5 bg-roast rounded-full animate-bounce" style="animation-delay: 0.3s"></span>
+          </span>
+          <span id="soundIcon">☕</span>
+          <span id="soundText" class="hidden sm:inline">Cafe Ambience</span>
+        </button>
+
+        <!-- Audio Element: Relaxing Smooth Cafe Vibe Music -->
+        <audio id="musicAudio" loop preload="auto" src="relaxing-cafe-vibes.mp3"></audio>
+
+        <!-- Order Bag Button -->
+        <button id="cartBtn" class="flex items-center gap-2 bg-roast text-cream px-4 py-2 rounded-full text-xs font-semibold hover:bg-mocha transition-all shadow-md hover:shadow-lg hover:shadow-roast/20 active:scale-95 cursor-pointer">
+          <svg class="w-4 h-4 text-caramel" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+          </svg>
+          <span>Order Bag</span>
+          <span id="cartCount" class="w-5 h-5 rounded-full bg-caramel text-roast text-[11px] font-bold flex items-center justify-center">0</span>
+        </button>
+
+        <!-- Mobile Toggle -->
+        <button id="mobileToggle" class="md:hidden p-2 rounded-full hover:bg-latte/50 transition-colors text-bark cursor-pointer">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+          </svg>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Mobile Dropdown -->
+    <div id="mobileMenu" class="hidden md:hidden max-w-md mx-auto mt-2 glass-card rounded-2xl p-4 shadow-xl border border-white/60 space-y-2 text-center text-sm font-semibold text-bark pointer-events-auto">
+      <a href="#about" class="block py-2 hover:bg-latte/30 rounded-lg">Philosophy</a>
+      <a href="#menu" class="block py-2 hover:bg-latte/30 rounded-lg">Interactive Menu & Ingredients</a>
+      <a href="#brewing-timer" class="block py-2 hover:bg-latte/30 rounded-lg">Brew Timer</a>
+      <a href="#reviews" class="block py-2 hover:bg-latte/30 rounded-lg">Community</a>
+      <a href="#contact" class="block py-2 hover:bg-latte/30 rounded-lg">Visit Us</a>
+    </div>
+  </nav>
+
+  <!-- ================= HERO SECTION (TEXTURE ROAST) ================= -->
+  <section class="hero-mesh texture-roast min-h-screen relative flex items-center pt-28 pb-20 overflow-hidden">
+    <!-- Ambient glow -->
+    <div class="absolute -top-32 -left-32 w-96 h-96 bg-caramel/15 rounded-full blur-3xl pointer-events-none animate-pulse-glow"></div>
+    <div class="absolute top-1/2 -right-32 w-[30rem] h-[30rem] bg-mocha/30 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="max-w-7xl mx-auto px-6 relative z-10 grid lg:grid-cols-12 gap-12 items-center">
+      
+      <!-- Left Column -->
+      <div class="lg:col-span-7 text-cream space-y-6">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-xs text-latte font-medium">
+          <span class="w-2 h-2 rounded-full bg-caramel animate-ping"></span>
+          <span>Roasted fresh in small batches every sunrise</span>
+        </div>
+
+        <h1 class="font-display text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight text-foam leading-[1.08]">
+          Crafted with <br/>
+          <span class="italic font-normal text-transparent bg-clip-text bg-gradient-to-r from-caramel via-gold to-latte">Patience</span> & Passion.
+        </h1>
+
+        <p class="text-latte/80 text-lg md:text-xl max-w-xl font-light leading-relaxed">
+          Welcome to <strong class="font-semibold text-cream">Brew & Bloom</strong>. Direct-trade Ethiopian Arabica, alpine grass-fed dairy, and wild-fermented French hearth baking — click any item below to inspect authentic ingredients & recipe secrets.
+        </p>
+
+        <!-- Interactive Bean Selector Bar -->
+        <div class="p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 max-w-lg space-y-2">
+          <div class="text-[11px] font-bold uppercase tracking-wider text-caramel flex items-center justify-between">
+            <span>✨ Select Today's Featured Roast Profile:</span>
+            <span id="selectedRoastNote" class="text-gold font-normal">Floral & Bergamot</span>
+          </div>
+          <div class="flex gap-2">
+            <button class="roast-pill active flex-1 py-1.5 px-2 rounded-xl text-xs font-semibold bg-caramel text-roast transition-all cursor-pointer" data-roast="ethiopia">
+              ☕ Ethiopia Guji
+            </button>
+            <button class="roast-pill flex-1 py-1.5 px-2 rounded-xl text-xs font-semibold bg-white/10 text-latte hover:bg-white/20 transition-all cursor-pointer" data-roast="colombia">
+              🌋 Colombia Huila
+            </button>
+            <button class="roast-pill flex-1 py-1.5 px-2 rounded-xl text-xs font-semibold bg-white/10 text-latte hover:bg-white/20 transition-all cursor-pointer" data-roast="sumatra">
+              🍫 Sumatra Dark
+            </button>
+          </div>
+        </div>
+
+        <!-- Action CTAs -->
+        <div class="pt-2 flex flex-wrap items-center gap-4">
+          <a href="#menu" class="px-8 py-4 rounded-full bg-gradient-to-r from-caramel to-gold text-roast font-bold text-sm tracking-wide shadow-xl shadow-caramel/25 hover:shadow-2xl hover:shadow-caramel/40 transition-all hover:scale-105 active:scale-95 flex items-center gap-2">
+            <span>Explore Menu & Ingredients</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+            </svg>
+          </a>
+          <a href="#brewing-timer" class="px-7 py-4 rounded-full bg-white/5 hover:bg-white/10 text-cream text-sm font-semibold border border-white/20 transition-all backdrop-blur-sm">
+            Interactive Brew Timer
+          </a>
+        </div>
+
+        <!-- Metric highlights -->
+        <div class="pt-6 grid grid-cols-3 gap-6 border-t border-white/10 max-w-lg">
+          <div>
+            <div class="font-display text-3xl font-bold text-caramel">100%</div>
+            <div class="text-xs text-latte/70 font-medium mt-0.5">Ethically Traced</div>
+          </div>
+          <div>
+            <div class="font-display text-3xl font-bold text-caramel">93.5°C</div>
+            <div class="text-xs text-latte/70 font-medium mt-0.5">Precision Extracted</div>
+          </div>
+          <div>
+            <div class="font-display text-3xl font-bold text-caramel">48 Hr</div>
+            <div class="text-xs text-latte/70 font-medium mt-0.5">Pastry Fermentation</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right 3D Visual Stage with Steam Canvas -->
+      <div class="lg:col-span-5 relative perspective-stage flex justify-center items-center py-6">
+        
+        <div id="hero3DCard" class="tilt-card relative w-full max-w-md aspect-[4/5] rounded-[2.5rem] p-3 bg-gradient-to-b from-white/20 via-white/5 to-white/10 backdrop-blur-xl border border-white/25 shadow-2xl shadow-roast/60 cursor-pointer">
+          
+          <!-- Rising procedural steam canvas -->
+          <canvas id="steamCanvas"></canvas>
+
+          <!-- Main Image -->
+          <div class="relative w-full h-full rounded-[2rem] overflow-hidden group">
+            <img 
+              id="heroImage" 
+              src="images/hero-coffee.png" 
+              alt="Artisan Brew & Bloom Master Cup" 
+              class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+            />
+            <div class="absolute inset-0 bg-gradient-to-t from-roast/80 via-transparent to-transparent"></div>
+            
+            <div class="absolute bottom-6 left-6 right-6 text-cream">
+              <span id="heroRoastBadge" class="inline-block px-2.5 py-1 rounded-md bg-caramel/90 text-roast font-bold text-[10px] tracking-wider uppercase mb-2">Micro-Lot No. 42</span>
+              <h3 id="heroRoastTitle" class="font-display text-2xl font-bold text-foam">Ethiopian Yirgacheffe</h3>
+              <p id="heroRoastDesc" class="text-xs text-latte/80 mt-1">Single-origin washed beans with notes of wild jasmine blossoms, sweet apricot & golden honey.</p>
+            </div>
+          </div>
+
+          <!-- Top-Right Floating 3D Badge -->
+          <div class="absolute -top-4 -right-4 bg-gradient-to-r from-caramel to-gold text-roast px-4 py-2 rounded-2xl font-bold text-xs shadow-2xl flex items-center gap-1.5 border border-white/40 animate-float-slow">
+            <span class="text-base">☕</span>
+            <span>Master Pour</span>
+          </div>
+
+          <!-- Bottom-Left Rating Pill -->
+          <div class="absolute -bottom-5 -left-5 bg-bark/95 backdrop-blur-xl text-cream px-4 py-3 rounded-2xl shadow-2xl border border-caramel/30 flex items-center gap-3 animate-float-delay">
+            <div class="w-9 h-9 rounded-full bg-caramel/20 flex items-center justify-center text-caramel font-bold">
+              ★
+            </div>
+            <div>
+              <div class="text-xs font-bold text-foam flex items-center gap-1">
+                <span>4.98 / 5.0</span>
+                <span class="text-gold text-[10px]">★★★★★</span>
+              </div>
+              <div class="text-[10px] text-latte/60">Over 2,400+ daily regulars</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Wave divider -->
+    <div class="absolute bottom-0 left-0 right-0 pointer-events-none">
+      <svg viewBox="0 0 1440 90" fill="none" class="w-full h-auto" preserveAspectRatio="none">
+        <path d="M0,45 C320,90 720,0 1140,55 C1280,72 1380,60 1440,45 L1440,90 L0,90 Z" fill="#FAF5EE"/>
+      </svg>
+    </div>
+  </section>
+
+  <!-- ================= PHILOSOPHY SECTION ================= -->
+  <section id="about" class="py-20 bg-cream">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="grid md:grid-cols-3 gap-8">
+        
+        <div class="reveal glass-card rounded-3xl p-8 hover:-translate-y-2 transition-transform duration-300 shadow-sm border border-latte/60">
+          <div class="w-12 h-12 rounded-2xl bg-caramel/15 text-mocha flex items-center justify-center text-2xl mb-6">🌱</div>
+          <h3 class="font-display text-2xl font-bold text-bark mb-3">Direct-Trade Origins</h3>
+          <p class="text-mocha/70 text-sm leading-relaxed">
+            We bypass industrial middlemen, paying 40% above fair-trade floor prices directly to family-owned farms across Ethiopia, Colombia, and Sumatra.
+          </p>
+        </div>
+
+        <div class="reveal glass-card rounded-3xl p-8 hover:-translate-y-2 transition-transform duration-300 shadow-sm border border-latte/60">
+          <div class="w-12 h-12 rounded-2xl bg-caramel/15 text-mocha flex items-center justify-center text-2xl mb-6">🔥</div>
+          <h3 class="font-display text-2xl font-bold text-bark mb-3">Drum Convection Roasting</h3>
+          <p class="text-mocha/70 text-sm leading-relaxed">
+            Roasted on our vintage cast-iron drum with calibrated thermal airflow. We highlight delicate fruit notes rather than scorched bitterness.
+          </p>
+        </div>
+
+        <div class="reveal glass-card rounded-3xl p-8 hover:-translate-y-2 transition-transform duration-300 shadow-sm border border-latte/60">
+          <div class="w-12 h-12 rounded-2xl bg-caramel/15 text-mocha flex items-center justify-center text-2xl mb-6">🥐</div>
+          <h3 class="font-display text-2xl font-bold text-bark mb-3">48-Hr Wild Fermentation</h3>
+          <p class="text-mocha/70 text-sm leading-relaxed">
+            Our pastries rest for two full days using Normandy cultured butter and unbleached organic flours, baked fresh every morning at dawn.
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= INTERACTIVE MENU SECTION ================= -->
+  <section id="menu" class="py-24 bg-[#F5ECE1] relative">
+    <div class="max-w-7xl mx-auto px-6">
+      
+      <!-- Header -->
+      <div class="text-center max-w-2xl mx-auto mb-16 reveal">
+        <span class="inline-block px-3 py-1 rounded-full bg-caramel/20 text-mocha text-xs font-bold uppercase tracking-widest mb-3">
+          Interactive Tasting Bar
+        </span>
+        <h2 class="font-display text-4xl md:text-5xl font-bold text-bark tracking-tight">
+          Handcrafted Creations
+        </h2>
+        <p class="text-mocha/75 text-sm md:text-base mt-3">
+          <span class="text-caramel font-semibold">👉 Click on any card or image</span> to reveal its <strong>ingredients list</strong>, sensory notes, and customize your drink!
+        </p>
+
+        <!-- Category Filter Buttons -->
+        <div class="flex flex-wrap justify-center gap-2.5 mt-8">
+          <button class="filter-btn active px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all bg-bark text-cream shadow-md cursor-pointer" data-category="all">
+            All Items
+          </button>
+          <button class="filter-btn px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all bg-cream text-mocha hover:bg-latte cursor-pointer" data-category="coffee">
+            Espresso & Brews
+          </button>
+          <button class="filter-btn px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all bg-cream text-mocha hover:bg-latte cursor-pointer" data-category="tea">
+            Ceremonial Teas
+          </button>
+          <button class="filter-btn px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all bg-cream text-mocha hover:bg-latte cursor-pointer" data-category="pastry">
+            Hearth Pastries
+          </button>
+        </div>
+      </div>
+
+      <!-- Menu Grid -->
+      <div id="menuContainer" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 perspective-stage">
+        <!-- Injected dynamically via JS with 3D tilt, glare & clickable triggers -->
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= INTERACTIVE POUR-OVER BREWING TIMER WIDGET (TEXTURE ROAST) ================= -->
+  <section id="brewing-timer" class="texture-roast py-24 bg-roast text-cream relative overflow-hidden">
+    <!-- Ambient glow -->
+    <div class="absolute -top-40 -right-40 w-96 h-96 bg-caramel/15 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute -bottom-40 -left-40 w-96 h-96 bg-mocha/40 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="max-w-7xl mx-auto px-6 relative z-10">
+      <div class="grid lg:grid-cols-12 gap-12 items-center">
+        
+        <!-- Left: Guide text -->
+        <div class="lg:col-span-6 space-y-6 reveal">
+          <span class="text-xs font-bold uppercase tracking-widest text-caramel">Interactive Cupping Lab</span>
+          <h2 class="font-display text-4xl md:text-5xl font-bold leading-tight text-foam">
+            The Barista <br/><span class="text-gold italic font-normal">Pour-Over Timer</span>
+          </h2>
+          <p class="text-latte/80 leading-relaxed font-light text-sm">
+            Experience the precision of artisan coffee extraction at home. Follow our calibrated 3-stage pour sequence. Click <strong>Start Ritual</strong> to trigger the live brew assistant!
+          </p>
+
+          <div class="space-y-3 pt-2">
+            <div id="step1" class="brew-step p-4 rounded-2xl bg-white/5 border border-white/10 transition-all flex items-start gap-4">
+              <span class="w-8 h-8 rounded-xl bg-caramel/20 text-caramel flex items-center justify-center font-bold text-sm flex-shrink-0">1</span>
+              <div>
+                <h4 class="font-bold text-sm text-cream">0:00 – The Bloom (50g water)</h4>
+                <p class="text-xs text-latte/70 mt-1">Saturate grounds evenly. Allows trapped CO2 gases from roasting to escape, unlocking bright sweetness.</p>
+              </div>
+            </div>
+
+            <div id="step2" class="brew-step p-4 rounded-2xl bg-white/5 border border-white/10 transition-all flex items-start gap-4">
+              <span class="w-8 h-8 rounded-xl bg-caramel/20 text-caramel flex items-center justify-center font-bold text-sm flex-shrink-0">2</span>
+              <div>
+                <h4 class="font-bold text-sm text-cream">0:45 – Main Spiral Pour (Up to 200g)</h4>
+                <p class="text-xs text-latte/70 mt-1">Gentle clockwise spirals from center outwards at 93.5°C water temp without touching filter edges.</p>
+              </div>
+            </div>
+
+            <div id="step3" class="brew-step p-4 rounded-2xl bg-white/5 border border-white/10 transition-all flex items-start gap-4">
+              <span class="w-8 h-8 rounded-xl bg-caramel/20 text-caramel flex items-center justify-center font-bold text-sm flex-shrink-0">3</span>
+              <div>
+                <h4 class="font-bold text-sm text-cream">1:30 – Final Drawdown (Up to 300g)</h4>
+                <p class="text-xs text-latte/70 mt-1">Maintain consistent water bed height. Total extraction finishes at 2:30 for a clean, floral cup.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Interactive Digital Timer Device -->
+        <div class="lg:col-span-6 reveal flex justify-center">
+          <div class="w-full max-w-md p-8 rounded-[2.5rem] bg-gradient-to-b from-white/10 via-white/5 to-white/10 border border-white/20 backdrop-blur-xl shadow-2xl text-center space-y-6">
+            
+            <div class="flex items-center justify-between text-xs text-latte">
+              <span class="font-semibold uppercase tracking-wider text-caramel">Ratio: 18g : 300g</span>
+              <span id="brewStatusPill" class="px-3 py-1 rounded-full bg-white/10 text-gold font-bold">Ready</span>
+            </div>
+
+            <!-- Big Digital Clock Display -->
+            <div class="py-6 rounded-3xl bg-roast/90 border border-caramel/30 shadow-inner">
+              <div id="timerDisplay" class="font-display text-6xl md:text-7xl font-bold tracking-tight text-gold font-mono">
+                00:00
+              </div>
+              <p id="timerPrompt" class="text-xs text-latte/70 mt-2">Press Start to begin blooming</p>
+            </div>
+
+            <!-- Controls -->
+            <div class="flex items-center justify-center gap-4">
+              <button id="startTimerBtn" class="px-8 py-3.5 rounded-full bg-gradient-to-r from-caramel to-gold text-roast font-bold text-sm shadow-lg hover:shadow-caramel/30 transition-all active:scale-95 cursor-pointer">
+                Start Ritual
+              </button>
+              <button id="resetTimerBtn" class="px-6 py-3.5 rounded-full bg-white/10 hover:bg-white/20 text-cream font-semibold text-sm transition-all active:scale-95 cursor-pointer">
+                Reset
+              </button>
+            </div>
+
+            <div class="text-[11px] text-latte/50">
+              💡 Calibrated for V60, Kalita Wave, and Chemex pour-over drippers.
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= COMMUNITY REVIEWS ================= -->
+  <section id="reviews" class="py-24 bg-cream">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="text-center max-w-xl mx-auto mb-16 reveal">
+        <span class="text-xs font-bold uppercase tracking-widest text-caramel">Guest Stories</span>
+        <h2 class="font-display text-4xl md:text-5xl font-bold text-bark mt-2">Loved by Coffee Lovers</h2>
+        <p class="text-mocha/70 text-sm mt-3">Read what regulars have to say about their daily ritual at Brew & Bloom.</p>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-8">
+        
+        <div class="reveal glass-card rounded-3xl p-8 border border-latte hover:-translate-y-2 transition-transform duration-300 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center gap-1 text-gold text-sm mb-4">
+              <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+              <span class="text-xs text-mocha/60 font-semibold ml-2">Verified Regular</span>
+            </div>
+            <p class="text-mocha/80 text-sm leading-relaxed italic">
+              "The single-origin Ethiopian espresso is on another planet. You can genuinely taste the candied peach and jasmine notes. Plus, the staff remembers my drink order down to the oat foam ratio."
+            </p>
+          </div>
+          <div class="flex items-center gap-3.5 mt-6 pt-6 border-t border-latte/50">
+            <img src="images/avatar-sarah.png" alt="Sarah M." class="w-12 h-12 rounded-full object-cover border-2 border-caramel/40" />
+            <div>
+              <h4 class="font-bold text-bark text-sm">Sarah Mitchell</h4>
+              <p class="text-mocha/60 text-xs">Architect · Regular since 2023</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="reveal glass-card rounded-3xl p-8 border border-latte hover:-translate-y-2 transition-transform duration-300 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center gap-1 text-gold text-sm mb-4">
+              <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+              <span class="text-xs text-mocha/60 font-semibold ml-2">Pastry Enthusiast</span>
+            </div>
+            <p class="text-mocha/80 text-sm leading-relaxed italic">
+              "Their 48-hour butter croissant paired with the Nitro Cold Brew is heaven on earth. The lamination on the pastry shatters like glass in the best possible way. Nothing in the city compares."
+            </p>
+          </div>
+          <div class="flex items-center gap-3.5 mt-6 pt-6 border-t border-latte/50">
+            <img src="images/avatar-james.png" alt="James R." class="w-12 h-12 rounded-full object-cover border-2 border-caramel/40" />
+            <div>
+              <h4 class="font-bold text-bark text-sm">James Rodriguez</h4>
+              <p class="text-mocha/60 text-xs">Food Critic & Writer</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="reveal glass-card rounded-3xl p-8 border border-latte hover:-translate-y-2 transition-transform duration-300 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center gap-1 text-gold text-sm mb-4">
+              <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+              <span class="text-xs text-mocha/60 font-semibold ml-2">Matcha Connoisseur</span>
+            </div>
+            <p class="text-mocha/80 text-sm leading-relaxed italic">
+              "I am very particular about my matcha. Most cafes use culinary-grade powder stuffed with artificial sugar. Brew & Bloom uses genuine first-harvest ceremonial Uji matcha whisked with bamboo. Remarkable!"
+            </p>
+          </div>
+          <div class="flex items-center gap-3.5 mt-6 pt-6 border-t border-latte/50">
+            <img src="images/avatar-amara.png" alt="Amara K." class="w-12 h-12 rounded-full object-cover border-2 border-caramel/40" />
+            <div>
+              <h4 class="font-bold text-bark text-sm">Amara Khan</h4>
+              <p class="text-mocha/60 text-xs">Creative Director</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= CONTACT / VISIT (TEXTURE ROAST) ================= -->
+  <section id="contact" class="texture-roast py-24 bg-[#EFE4D6] relative overflow-hidden">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="grid lg:grid-cols-12 gap-12 items-start">
+        
+        <div class="lg:col-span-5 space-y-6 reveal">
+          <span class="text-xs font-bold uppercase tracking-widest text-caramel">Come Say Hello</span>
+          <h2 class="font-display text-4xl md:text-5xl font-bold text-bark">Your Daily Haven</h2>
+          <p class="text-mocha/70 text-sm leading-relaxed">
+            Whether you need a quiet corner for morning reading, a quick morning espresso before work, or roasted beans ground for your home setup — our baristas are ready to welcome you.
+          </p>
+
+          <div class="space-y-4 pt-4">
+            <div class="flex items-center gap-4 p-4 rounded-2xl bg-white/75 border border-latte shadow-sm">
+              <div class="w-10 h-10 rounded-xl bg-caramel/20 text-bark flex items-center justify-center font-bold">📍</div>
+              <div>
+                <h4 class="font-bold text-sm text-bark">The Sanctuary</h4>
+                <p class="text-xs text-mocha/70">128 Artisan Boulevard, Historic District</p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-4 p-4 rounded-2xl bg-white/75 border border-latte shadow-sm">
+              <div class="w-10 h-10 rounded-xl bg-caramel/20 text-bark flex items-center justify-center font-bold">⏰</div>
+              <div>
+                <h4 class="font-bold text-sm text-bark">Opening Hours</h4>
+                <p class="text-xs text-mocha/70">Mon – Fri: 6:30 AM – 7:00 PM | Sat – Sun: 7:30 AM – 8:00 PM</p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-4 p-4 rounded-2xl bg-white/75 border border-latte shadow-sm">
+              <div class="w-10 h-10 rounded-xl bg-caramel/20 text-bark flex items-center justify-center font-bold">✉️</div>
+              <div>
+                <h4 class="font-bold text-sm text-bark">Direct Connect</h4>
+                <p class="text-xs text-mocha/70">hello@brewandbloom.coffee · (555) 782-9382</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-7 reveal">
+          <form id="contactForm" class="glass-card rounded-[2rem] p-8 md:p-10 shadow-xl border border-white/80 space-y-5">
+            <h3 class="font-display text-2xl font-bold text-bark mb-1">Get in Touch or Book a Cupping Session</h3>
+            <p class="text-xs text-mocha/60 mb-6">Drop us a line for private event bookings, wholesale beans, or catering.</p>
+
+            <div class="grid sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-mocha mb-1.5 uppercase tracking-wider">Your Name</label>
+                <input type="text" required placeholder="Elena Rostova" class="w-full px-4 py-3 rounded-xl bg-cream/70 border border-latte text-bark placeholder:text-mocha/40 text-sm focus:outline-none focus:border-caramel focus:ring-2 focus:ring-caramel/20 transition-all" />
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-mocha mb-1.5 uppercase tracking-wider">Email Address</label>
+                <input type="email" required placeholder="elena@example.com" class="w-full px-4 py-3 rounded-xl bg-cream/70 border border-latte text-bark placeholder:text-mocha/40 text-sm focus:outline-none focus:border-caramel focus:ring-2 focus:ring-caramel/20 transition-all" />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-mocha mb-1.5 uppercase tracking-wider">Subject</label>
+              <select class="w-full px-4 py-3 rounded-xl bg-cream/70 border border-latte text-bark text-sm focus:outline-none focus:border-caramel focus:ring-2 focus:ring-caramel/20 transition-all">
+                <option>Private Roastery Cupping Tour</option>
+                <option>Wholesale Bean Inquiries</option>
+                <option>Catering & Hearth Bakery Pre-orders</option>
+                <option>General Feedback & Hello</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-mocha mb-1.5 uppercase tracking-wider">Your Message</label>
+              <textarea rows="4" required placeholder="Tell us about your event or coffee preferences..." class="w-full px-4 py-3 rounded-xl bg-cream/70 border border-latte text-bark placeholder:text-mocha/40 text-sm focus:outline-none focus:border-caramel focus:ring-2 focus:ring-caramel/20 transition-all resize-none"></textarea>
+            </div>
+
+            <button type="submit" class="w-full py-4 rounded-xl bg-roast text-foam font-bold text-sm tracking-wide hover:bg-mocha transition-all shadow-lg hover:shadow-roast/20 active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer">
+              <span>Send Message</span>
+              <svg class="w-4 h-4 text-caramel" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+              </svg>
+            </button>
+          </form>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= FOOTER (TEXTURE ROAST PATTERN ON DARK BROWN) ================= -->
+  <footer class="texture-roast bg-roast text-cream pt-16 pb-12 border-t border-mocha/40 relative overflow-hidden">
+    <div class="max-w-7xl mx-auto px-6 relative z-10">
+      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
+        <div>
+          <span class="font-display text-2xl font-bold text-foam block mb-3">Brew & Bloom</span>
+          <p class="text-xs text-latte/70 leading-relaxed">
+            An artisan micro-roastery and French hearth bakery dedicated to single-origin sourcing, meticulous craft, and soulful hospitality.
+          </p>
+        </div>
+
+        <div>
+          <h4 class="font-bold text-xs uppercase tracking-widest text-caramel mb-4">Navigation</h4>
+          <ul class="space-y-2 text-xs text-latte/80 font-medium">
+            <li><a href="#about" class="hover:text-gold transition-colors">Our Philosophy</a></li>
+            <li><a href="#menu" class="hover:text-gold transition-colors">Interactive Menu</a></li>
+            <li><a href="#brewing-timer" class="hover:text-gold transition-colors">Brew Timer</a></li>
+            <li><a href="#reviews" class="hover:text-gold transition-colors">Guest Reviews</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="font-bold text-xs uppercase tracking-widest text-caramel mb-4">Roastery Hours</h4>
+          <p class="text-xs text-latte/70 leading-relaxed">
+            Monday – Friday: 6:30am – 7:00pm<br/>
+            Saturday – Sunday: 7:30am – 8:00pm<br/>
+            Fresh Pastry Drops: 7:00am & 1:00pm
+          </p>
+        </div>
+
+        <div>
+          <h4 class="font-bold text-xs uppercase tracking-widest text-caramel mb-4">Stay In The Circle</h4>
+          <p class="text-xs text-latte/70 mb-3">Subscribe for secret micro-lot drops and seasonal coffee tasting events.</p>
+          <div class="flex gap-2">
+            <input type="email" placeholder="Your email" class="px-3 py-2 rounded-lg bg-white/10 border border-white/15 text-xs text-cream placeholder:text-white/40 focus:outline-none focus:border-caramel w-full" />
+            <button class="bg-caramel text-roast px-3 py-2 rounded-lg text-xs font-bold hover:bg-gold transition-colors cursor-pointer">Join</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between text-xs text-latte/50 gap-4">
+        <p>© 2026 Brew & Bloom Roastery Co. All rights reserved.</p>
+        <p class="flex items-center gap-1">Poured with ☕ & pure intention.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ================= INGREDIENTS & RECIPE MODAL (HIDDEN BY DEFAULT) ================= -->
+  <div id="recipeModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-roast/80 backdrop-blur-md">
+    
+    <!-- Modal Card -->
+    <div id="modalSheet" class="relative w-full max-w-2xl bg-cream rounded-[2.5rem] overflow-hidden shadow-2xl border border-white/80 max-h-[92vh] flex flex-col transform transition-all duration-300 scale-95 opacity-0">
+      
+      <!-- Close Button -->
+      <button id="closeModalBtn" class="absolute top-5 right-5 z-20 w-10 h-10 rounded-full bg-bark/70 text-foam backdrop-blur-md hover:bg-bark transition-colors flex items-center justify-center shadow-lg cursor-pointer">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+
+      <!-- Modal Body -->
+      <div class="overflow-y-auto p-6 md:p-8 space-y-6">
+        
+        <!-- Header Image & Info -->
+        <div class="relative w-full h-64 md:h-72 rounded-3xl overflow-hidden shadow-lg border border-white/60">
+          <img id="modalImg" src="" alt="" class="w-full h-full object-cover" />
+          <div class="absolute inset-0 bg-gradient-to-t from-roast/90 via-roast/30 to-transparent"></div>
+          
+          <div class="absolute bottom-5 left-6 right-6 text-cream">
+            <div class="flex items-center gap-2 mb-2">
+              <span id="modalCategory" class="px-3 py-1 rounded-full bg-caramel text-roast text-xs font-bold uppercase tracking-wider"></span>
+              <span id="modalDietary" class="px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-foam text-xs font-semibold"></span>
+            </div>
+            <div class="flex items-baseline justify-between">
+              <h3 id="modalTitle" class="font-display text-3xl md:text-4xl font-bold text-foam"></h3>
+              <span id="modalPrice" class="font-display text-2xl font-bold text-gold"></span>
+            </div>
+          </div>
+        </div>
+
+        <p id="modalDesc" class="text-mocha/80 text-sm leading-relaxed"></p>
+
+        <!-- Gourmet Ingredients -->
+        <div class="bg-white/80 rounded-2xl p-5 border border-latte shadow-sm">
+          <h4 class="font-bold text-xs uppercase tracking-wider text-caramel mb-3 flex items-center gap-2">
+            <span>🌿</span>
+            <span>Handpicked Ingredients & Recipe Breakdown</span>
+          </h4>
+          <ul id="modalIngredients" class="grid sm:grid-cols-2 gap-2 text-xs text-bark font-medium">
+            <!-- Injected via JS -->
+          </ul>
+        </div>
+
+        <!-- Customize Drink Options -->
+        <div id="modalCustomizerSection" class="bg-white/80 rounded-2xl p-5 border border-latte shadow-sm space-y-3">
+          <h4 class="font-bold text-xs uppercase tracking-wider text-caramel flex items-center gap-2">
+            <span>✨</span>
+            <span>Customize Your Cup</span>
+          </h4>
+          
+          <div class="grid sm:grid-cols-2 gap-4 text-xs">
+            <div>
+              <label class="block font-semibold text-bark mb-1.5">Milk Alternative:</label>
+              <select id="customMilk" class="w-full p-2.5 rounded-xl bg-cream border border-latte text-bark focus:outline-none focus:border-caramel">
+                <option value="0">Local Whole Farm Milk (+ $0.00)</option>
+                <option value="0.75">Minor Figures Oat Milk (+ $0.75)</option>
+                <option value="0.75">Almond Breeze Milk (+ $0.75)</option>
+                <option value="0">Black / No Milk (+ $0.00)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-semibold text-bark mb-1.5">Sweetness Level:</label>
+              <select id="customSweet" class="w-full p-2.5 rounded-xl bg-cream border border-latte text-bark focus:outline-none focus:border-caramel">
+                <option>Standard Signature Sweetness (100%)</option>
+                <option>Half Sweet (50%)</option>
+                <option>Unsweetened (0%)</option>
+                <option>Raw Honey Sweetened</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tasting Profile Sliders -->
+        <div class="bg-white/80 rounded-2xl p-5 border border-latte shadow-sm">
+          <h4 class="font-bold text-xs uppercase tracking-wider text-caramel mb-3 flex items-center gap-2">
+            <span>☕</span>
+            <span>Sensory Profile & Notes</span>
+          </h4>
+          <div id="modalTastingNotes" class="grid sm:grid-cols-2 gap-3 text-xs">
+            <!-- Injected via JS -->
+          </div>
+        </div>
+
+        <!-- Nutrition & Origin Metrics -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div class="bg-latte/40 rounded-xl p-3 text-center">
+            <span class="text-[10px] uppercase font-bold text-mocha/60 block">Energy</span>
+            <span id="modalCalories" class="font-bold text-bark text-xs"></span>
+          </div>
+          <div class="bg-latte/40 rounded-xl p-3 text-center">
+            <span class="text-[10px] uppercase font-bold text-mocha/60 block">Caffeine</span>
+            <span id="modalCaffeine" class="font-bold text-bark text-xs"></span>
+          </div>
+          <div class="bg-latte/40 rounded-xl p-3 text-center">
+            <span class="text-[10px] uppercase font-bold text-mocha/60 block">Serving Temp</span>
+            <span id="modalTemp" class="font-bold text-bark text-xs">Optimal</span>
+          </div>
+          <div class="bg-latte/40 rounded-xl p-3 text-center">
+            <span class="text-[10px] uppercase font-bold text-mocha/60 block">Allergens</span>
+            <span id="modalAllergens" class="font-bold text-bark text-xs">None</span>
+          </div>
+        </div>
+
+        <!-- Origin Story -->
+        <div class="p-4 rounded-xl bg-caramel/10 border border-caramel/25 text-xs text-mocha/80">
+          <strong class="text-bark block mb-1">📍 Sourcing & Origin:</strong>
+          <span id="modalOrigin"></span>
+        </div>
+
+      </div>
+
+      <!-- Footer Actions -->
+      <div class="p-5 bg-white border-t border-latte flex items-center justify-between gap-4">
+        <div class="flex items-center gap-2 bg-latte/50 rounded-full px-3 py-1.5">
+          <button id="modalQtyMinus" class="w-7 h-7 rounded-full bg-white text-bark font-bold flex items-center justify-center hover:bg-latte active:scale-90 transition-transform cursor-pointer">-</button>
+          <span id="modalQtyVal" class="w-6 text-center font-bold text-sm text-bark">1</span>
+          <button id="modalQtyPlus" class="w-7 h-7 rounded-full bg-white text-bark font-bold flex items-center justify-center hover:bg-latte active:scale-90 transition-transform cursor-pointer">+</button>
+        </div>
+
+        <button id="modalAddCartBtn" class="flex-1 py-3.5 px-6 rounded-full bg-roast text-foam font-bold text-xs uppercase tracking-wider hover:bg-mocha transition-all shadow-lg hover:shadow-roast/20 flex items-center justify-center gap-2 active:scale-95 cursor-pointer">
+          <span>Add to Order Bag</span>
+          <span id="modalActionPrice" class="text-gold font-bold"></span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================= ORDER BAG DRAWER (HIDDEN BY DEFAULT) ================= -->
+  <div id="cartDrawer" class="hidden fixed inset-0 z-50">
+    <div id="cartBackdrop" class="absolute inset-0 bg-roast/60 backdrop-blur-sm transition-opacity opacity-0 cursor-pointer"></div>
+    <div id="cartSheet" class="absolute top-0 right-0 bottom-0 w-full max-w-md bg-cream shadow-2xl p-6 flex flex-col transform translate-x-full transition-transform duration-300 border-l border-latte">
+      
+      <div class="flex items-center justify-between pb-4 border-b border-latte">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">☕</span>
+          <h3 class="font-display text-xl font-bold text-bark">Your Coffee Bag</h3>
+        </div>
+        <button id="closeCartBtn" class="w-8 h-8 rounded-full bg-latte/50 flex items-center justify-center text-bark hover:bg-latte cursor-pointer">✕</button>
+      </div>
+
+      <div id="cartItemsList" class="flex-1 overflow-y-auto py-4 space-y-3">
+        <!-- Rendered by JS -->
+      </div>
+
+      <div class="pt-4 border-t border-latte space-y-3">
+        <div class="flex justify-between text-sm font-bold text-bark">
+          <span>Estimated Total:</span>
+          <span id="cartTotalPrice" class="text-caramel font-display text-xl">$0.00</span>
+        </div>
+        <button id="checkoutBtn" class="w-full py-4 rounded-xl bg-roast text-foam font-bold text-xs uppercase tracking-wider hover:bg-mocha transition-all shadow-lg active:scale-95 cursor-pointer">
+          Simulate Pickup Order (In 15 Min)
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================= CREATIVE COFFEE SHOP MOUSE MOVEMENT SYSTEM ================= -->
+  <!-- 1. Interactive Coffee Aroma Steam & Roasted Bean Particle Canvas -->
+  <canvas id="coffeeCursorCanvas"></canvas>
+
+  <!-- 2. Barista Crema Ring Follower with Contextual Hover Feedback -->
+  <div id="baristaRing" class="hidden md:block">
+    <div class="barista-center-dot"></div>
+    <span id="baristaHoverTag">☕ Sip</span>
+  </div>
+
+  <!-- ================= TOAST NOTIFICATION ================= -->
+  <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 translate-y-24 opacity-0 transition-all duration-300 pointer-events-none">
+    <div class="bg-roast/95 text-foam px-6 py-3.5 rounded-full shadow-2xl border border-caramel/40 backdrop-blur-md flex items-center gap-3 text-xs font-medium">
+      <span class="text-base" id="toastIcon">✨</span>
+      <span id="toastMsg"></span>
+    </div>
+  </div>
+
+  <!-- ================= JAVASCRIPT ================= -->
+  <script>
+    /* ==========================================================
+       1. COMPLETE RECIPES & INGREDIENTS DATABASE
+       ========================================================== */
+    const MENU_DATABASE = [
+      {
+        id: 'espresso',
+        name: 'Signature Espresso',
+        category: 'coffee',
+        price: 3.50,
+        img: 'images/espresso.png',
+        badge: 'Classic Single-Origin',
+        desc: 'Rich, bold, and silky smooth with a dense golden-hazelnut crema. A double shot pulled under 9.2 bars of precision hydraulic pressure.',
+        ingredients: [
+          'Single-Origin Ethiopian Yirgacheffe Beans (18.5g dose)',
+          'Triple-Filtered Mineralized Water (93.5°C)',
+          'High-elevation volcanic Arabica (Grade 1)',
+          'Natural golden crema emulsion'
+        ],
+        tastingNotes: {
+          'Roast Depth': 'Medium-Dark (City+)',
+          'Acidity': 'Vibrant Citrus',
+          'Sweetness': 'Caramelized Dark Cocoa',
+          'Body': 'Heavy & Velvety'
+        },
+        nutrition: {
+          calories: '5 kcal',
+          caffeine: '145 mg',
+          dietary: 'Vegan',
+          allergens: 'None'
+        },
+        origin: 'Direct-trade harvest from Guji Highlands, Ethiopia (2,050m elevation). Washed process.'
+      },
+      {
+        id: 'caramel-latte',
+        name: 'Artisan Caramel Latte',
+        category: 'coffee',
+        price: 5.75,
+        img: 'images/caramel-latte.png',
+        badge: 'House Favorite',
+        desc: 'Velvety micro-foamed milk folded into a double shot of espresso, layered with our 4-hour slow-cooked Madagascar vanilla bean caramel.',
+        ingredients: [
+          'Double shot signature espresso blend',
+          'Steamed whole milk (or organic oat milk)',
+          'Handmade salted vanilla caramel reduction',
+          'Madagascar Bourbon vanilla bean caviar',
+          'Crystalline turbinado caramel crunch'
+        ],
+        tastingNotes: {
+          'Roast Depth': 'Medium Roast',
+          'Acidity': 'Ultra Low & Smooth',
+          'Sweetness': 'Rich Brown Butter & Toffee',
+          'Body': 'Silky Cream'
+        },
+        nutrition: {
+          calories: '240 kcal',
+          caffeine: '135 mg',
+          dietary: 'Vegetarian',
+          allergens: 'Dairy (Oat Option)'
+        },
+        origin: 'Blend of Colombian Huila and Brazilian Cerrado with house-simmered organic caramel.'
+      },
+      {
+        id: 'cold-brew',
+        name: '16-Hour Nitro Cold Brew',
+        category: 'coffee',
+        price: 4.95,
+        img: 'images/cold-brew.png',
+        badge: 'Slow Steeped',
+        desc: 'Steeped for 16 slow hours in chilled mineral water, then charged with pure nitrogen for a cascading velvet head and natural chocolate sweetness.',
+        ingredients: [
+          'Coarse-milled Guatemalan Antigua Arabica',
+          'Reverse-osmosis alpine ice water',
+          'Pure food-grade nitrogen gas infusion',
+          'Cold-pressed organic orange twist essence'
+        ],
+        tastingNotes: {
+          'Roast Depth': 'Dark Cacao',
+          'Acidity': 'Near Zero Acid',
+          'Sweetness': 'Dark Molasses',
+          'Body': 'Cascading Guinness-Style Texture'
+        },
+        nutrition: {
+          calories: '10 kcal',
+          caffeine: '210 mg',
+          dietary: '100% Vegan',
+          allergens: 'None'
+        },
+        origin: 'Volcanic mineral soil from Antigua Valley, Guatemala. 16-hour cold maceration.'
+      },
+      {
+        id: 'affogato',
+        name: 'Venetian Gelato Affogato',
+        category: 'coffee',
+        price: 7.00,
+        img: 'images/affogato.png',
+        badge: 'Dessert & Coffee',
+        desc: 'A dense quenelle of handcrafted Tahitian vanilla bean gelato immediately drowned in a piping hot, freshly extracted ristretto shot.',
+        ingredients: [
+          'Tahitian vanilla bean gelato (fresh dairy cream, egg yolks)',
+          'Freshly pulled double ristretto espresso',
+          'Shaved 72% Valrhona dark chocolate flakes',
+          'Crushed Italian almond amaretti crumble'
+        ],
+        tastingNotes: {
+          'Roast Depth': 'Bold Italian Ristretto',
+          'Acidity': 'Low & Rich',
+          'Sweetness': 'Decadent Custard Vanilla',
+          'Body': 'Hot & Cold Contrast'
+        },
+        nutrition: {
+          calories: '290 kcal',
+          caffeine: '80 mg',
+          dietary: 'Vegetarian',
+          allergens: 'Dairy, Eggs, Almonds'
+        },
+        origin: 'Artisanal small-batch gelato churned in-house daily with organic vanilla beans.'
+      },
+      {
+        id: 'capuccino',
+        name: 'Oat Velvet Cappuccino',
+        category: 'coffee',
+        price: 5.50,
+        img: 'images/capuccino.png',
+        badge: 'Plant-Based Star',
+        desc: 'Equal thirds of intense double ristretto, steamed barista-grade oat milk, and dense cloud-foam, finished with freshly ground Ceylon cinnamon.',
+        ingredients: [
+          'Double ristretto espresso extraction',
+          'Barista-edition steamed oat milk (Minor Figures)',
+          'Dense micro-bubble cloud foam',
+          'Dusting of organic Ceylon cinnamon & raw cocoa'
+        ],
+        tastingNotes: {
+          'Roast Depth': 'Medium City Roast',
+          'Acidity': 'Subtle Toasted Hazelnut',
+          'Sweetness': 'Natural Oat Sugar',
+          'Body': 'Cloud-Light & Airy'
+        },
+        nutrition: {
+          calories: '130 kcal',
+          caffeine: '145 mg',
+          dietary: 'Certified Vegan',
+          allergens: 'Gluten-Free Oats'
+        },
+        origin: 'Single-estate Central American Arabica paired with sustainably grown European oats.'
+      },
+      {
+        id: 'mocha',
+        name: 'Dark Ganache Mocha',
+        category: 'coffee',
+        price: 6.25,
+        img: 'images/mocha.png',
+        badge: 'Belgian Chocolate',
+        desc: 'Single-origin Peruvian dark cacao melted into hot espresso, enveloped in steamed micro-foam and crowned with vanilla chantilly cream.',
+        ingredients: [
+          '70% single-origin Peruvian dark chocolate ganache',
+          'Double shot espresso blend',
+          'Steamed local organic whole milk',
+          'Hand-whipped Bourbon vanilla chantilly cream',
+          'Micro-shaved dark chocolate bark'
+        ],
+        tastingNotes: {
+          'Roast Depth': 'Deep Bittersweet Cocoa',
+          'Acidity': 'Red Currant Notes',
+          'Sweetness': 'Decadent Chocolate Silk',
+          'Body': 'Rich & Luxurious'
+        },
+        nutrition: {
+          calories: '320 kcal',
+          caffeine: '155 mg',
+          dietary: 'Vegetarian',
+          allergens: 'Dairy (Oat Option)'
+        },
+        origin: 'Fair-trade Piura Blanco Peruvian cacao combined with Brazilian Santos espresso.'
+      },
+      {
+        id: 'earl-grey',
+        name: 'Imperial Lavender Earl Grey',
+        category: 'tea',
+        price: 3.25,
+        img: 'images/earl-grey.png',
+        badge: 'Ceremonial Brew',
+        desc: 'High-mountain Ceylon black tea cold-pressed with Calabrian bergamot oil, French blue cornflowers, and fragrant Provence culinary lavender.',
+        ingredients: [
+          'Organic high-grown Ceylon black tea leaves',
+          'First-cold-press Calabrian bergamot essential oil',
+          'Organic French blue cornflower petals',
+          'Culinary Provence lavender buds',
+          'Fresh organic Meyer lemon peel ribbon'
+        ],
+        tastingNotes: {
+          'Profile': 'Floral & Citrus Bergamot',
+          'Tannin': 'Smooth & Crisp',
+          'Sweetness': 'Delicate Blossom',
+          'Body': 'Clean & Uplifting'
+        },
+        nutrition: {
+          calories: '2 kcal',
+          caffeine: '45 mg',
+          dietary: '100% Vegan',
+          allergens: 'None'
+        },
+        origin: 'High-altitude gardens of Ruhuna, Sri Lanka & sun-drenched groves of Calabria, Italy.'
+      },
+      {
+        id: 'matcha-latte',
+        name: 'Ceremonial Uji Matcha Latte',
+        category: 'tea',
+        price: 5.50,
+        img: 'images/matcha-latte.png',
+        badge: 'Kyoto First-Harvest',
+        desc: 'Stone-ground ceremonial green tea from Kyoto shade-grown fields, whisked with a traditional bamboo chasen and folded into silky oat milk.',
+        ingredients: [
+          '100% First-Harvest Ceremonial Grade Matcha (Uji, Kyoto)',
+          'Purified 80°C mineral spring water',
+          'Bamboo-whisked jade froth emulsion',
+          'Steamed creamy oat milk',
+          'Subtle drop of raw wildflower honey (optional)'
+        ],
+        tastingNotes: {
+          'Profile': 'Savory Umami & Sweet Grass',
+          'Bitterness': 'Zero Astringency',
+          'Sweetness': 'Natural Chlorophyll & Honey',
+          'Body': 'Velvety Jade Crema'
+        },
+        nutrition: {
+          calories: '135 kcal',
+          caffeine: '65 mg (L-Theanine focused)',
+          dietary: 'Vegan',
+          allergens: 'None'
+        },
+        origin: 'Shade-grown for 30 days in Uji, Kyoto, Japan. Stone-ground at 30g per hour.'
+      },
+      {
+        id: 'croissant',
+        name: 'Golden Butter Croissant',
+        category: 'pastry',
+        price: 4.00,
+        img: 'images/croissant.png',
+        badge: '48-Hr Fermentation',
+        desc: 'Over 81 wafer-thin buttery layers. Shatteringly crisp and golden on the exterior, with an airy, honeycomb interior that melts in your mouth.',
+        ingredients: [
+          'French AOP Charentes-Poitou Butter (84% butterfat)',
+          'Organic unbleached French T55 wheat flour',
+          '48-hour cold-fermented levain starter',
+          'Brittany Fleur de Sel sea salt',
+          'Organic golden farm egg yolk wash'
+        ],
+        tastingNotes: {
+          'Crust': 'Shatteringly Flaky & Toasted',
+          'Crumb': 'Airy Honeycomb Structure',
+          'Sweetness': 'Cultured Sweet Cream',
+          'Aroma': 'Brown Butter & Brioche'
+        },
+        nutrition: {
+          calories: '280 kcal',
+          caffeine: '0 mg',
+          dietary: 'Vegetarian',
+          allergens: 'Wheat/Gluten, Dairy, Egg'
+        },
+        origin: 'Hand-laminated and baked fresh in our stone deck oven at 5:30 AM every morning.'
+      },
+      {
+        id: 'blueberry-muffin',
+        name: 'Wild Maine Blueberry Streusel',
+        category: 'pastry',
+        price: 4.50,
+        img: 'images/blueberry-muffin.png',
+        badge: 'Stone Oven Baked',
+        desc: 'Packed with wild hand-harvested Maine blueberries, perfumed with Meyer lemon zest, and crowned with a crunchy cinnamon-oat streusel.',
+        ingredients: [
+          'Wild hand-picked Maine blueberries',
+          'Unbleached pastry flour & cultured buttermilk',
+          'Fresh grated Meyer lemon zest',
+          'Cinnamon brown sugar rolled-oat crumble',
+          'Bourbon vanilla bean extract'
+        ],
+        tastingNotes: {
+          'Texture': 'Moist & Tender Crumb',
+          'Fruit': 'Bursting Wild Berry Juice',
+          'Topping': 'Crunchy Spiced Streusel',
+          'Finish': 'Bright Citrus Zest'
+        },
+        nutrition: {
+          calories: '340 kcal',
+          caffeine: '0 mg',
+          dietary: 'Vegetarian',
+          allergens: 'Wheat, Dairy, Eggs'
+        },
+        origin: 'Wild blueberries sustainably harvested in Downeast Maine.'
+      },
+      {
+        id: 'cinnamon-roll',
+        name: 'Brioche Cinnamon Swirl',
+        category: 'pastry',
+        price: 5.00,
+        img: 'images/cinnamon-roll.png',
+        badge: 'Served Warm',
+        desc: 'Pillowy egg-brioche dough layered with spicy Korintje cinnamon and dark brown sugar, drenched in melted cream cheese vanilla icing.',
+        ingredients: [
+          'Slow-fermented egg brioche dough',
+          'Korintje Grade-A Indonesian cassia cinnamon',
+          'Dark Muscovado cane sugar & brown butter',
+          'Whipped Philadelphia cream cheese glaze',
+          'Tahitian pure vanilla bean extract'
+        ],
+        tastingNotes: {
+          'Texture': 'Soft & Pillowy Center',
+          'Spice': 'Aromatic Warm Cinnamon',
+          'Glaze': 'Tangy-Sweet Cream Cheese',
+          'Finish': 'Melt-in-your-mouth Comfort'
+        },
+        nutrition: {
+          calories: '420 kcal',
+          caffeine: '0 mg',
+          dietary: 'Vegetarian',
+          allergens: 'Wheat, Dairy, Eggs'
+        },
+        origin: 'Hand-swirled in small batches and served warm from our hearth.'
+      }
+    ];
+
+    /* ==========================================================
+       2. RENDER MENU CARDS & 3D TILT
+       ========================================================== */
+    const menuContainer = document.getElementById('menuContainer');
+
+    function renderMenuCards(items) {
+      menuContainer.innerHTML = '';
+      
+      items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'tilt-card glass-card rounded-[2rem] p-5 shadow-lg border border-white/70 relative cursor-pointer group flex flex-col justify-between';
+        card.dataset.id = item.id;
+        card.dataset.category = item.category;
+
+        card.innerHTML = `
+          <div class="card-glare"></div>
+
+          <div>
+            <div class="relative w-full h-52 rounded-2xl overflow-hidden mb-4 shadow-md bg-bark/10">
+              <img 
+                src="${item.img}" 
+                alt="${item.name}" 
+                class="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
+              />
+              
+              <div class="absolute top-3 left-3 bg-bark/85 backdrop-blur-md text-foam px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border border-white/20">
+                ${item.badge}
+              </div>
+
+              <!-- Interactive Click Hint Badge -->
+              <div class="absolute inset-0 bg-roast/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-[2px]">
+                <div class="pulse-ring bg-caramel text-roast px-4 py-2 rounded-full font-bold text-xs shadow-2xl flex items-center gap-1.5 transform scale-95 group-hover:scale-100 transition-transform">
+                  <span>🔍</span>
+                  <span>View Recipe & Ingredients</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Content -->
+            <div class="tilt-card-content">
+              <div class="flex items-start justify-between gap-2 mb-2">
+                <h3 class="font-display text-xl font-bold text-bark group-hover:text-caramel transition-colors leading-snug">
+                  ${item.name}
+                </h3>
+                <span class="font-display text-lg font-bold text-caramel flex-shrink-0">
+                  $${item.price.toFixed(2)}
+                </span>
+              </div>
+              <p class="text-xs text-mocha/70 line-clamp-2 leading-relaxed mb-4">
+                ${item.desc}
+              </p>
+            </div>
+          </div>
+
+          <!-- Bottom Action Bar -->
+          <div class="tilt-card-content pt-3 border-t border-latte/60 flex items-center justify-between gap-2 mt-auto">
+            <span class="text-[11px] text-mocha/70 font-semibold flex items-center gap-1">
+              <span>🌿</span>
+              <span>${item.ingredients.length} Ingredients</span>
+            </span>
+
+            <button class="quick-add-btn text-xs font-bold text-roast hover:text-white bg-caramel/30 hover:bg-caramel px-3.5 py-1.5 rounded-full transition-all active:scale-95 flex items-center gap-1 cursor-pointer" data-id="${item.id}">
+              <span>+ Add to Bag</span>
+            </button>
+          </div>
+        `;
+
+        attach3DTilt(card);
+
+        // Clicking anywhere on card opens modal
+        card.addEventListener('click', (e) => {
+          if (e.target.closest('.quick-add-btn')) return;
+          openRecipeModal(item);
+        });
+
+        // Quick add handler
+        const addBtn = card.querySelector('.quick-add-btn');
+        addBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          addToCart(item, 1, 0, 'Standard');
+        });
+
+        menuContainer.appendChild(card);
+      });
+    }
+
+    function attach3DTilt(element) {
+      element.addEventListener('mousemove', (e) => {
+        const rect = element.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        const rotateX = ((y - centerY) / centerY) * -10;
+        const rotateY = ((x - centerX) / centerX) * 10;
+
+        element.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+        element.style.setProperty('--mouse-x', `${(x / rect.width) * 100}%`);
+        element.style.setProperty('--mouse-y', `${(y / rect.height) * 100}%`);
+      });
+
+      element.addEventListener('mouseleave', () => {
+        element.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+      });
+    }
+
+    renderMenuCards(MENU_DATABASE);
+
+    // Category Filter clicks
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterBtns.forEach(b => {
+          b.classList.remove('active', 'bg-bark', 'text-cream', 'shadow-md');
+          b.classList.add('bg-cream', 'text-mocha');
+        });
+        btn.classList.add('active', 'bg-bark', 'text-cream', 'shadow-md');
+        btn.classList.remove('bg-cream', 'text-mocha');
+
+        const category = btn.dataset.category;
+        if (category === 'all') {
+          renderMenuCards(MENU_DATABASE);
+        } else {
+          const filtered = MENU_DATABASE.filter(i => i.category === category);
+          renderMenuCards(filtered);
+        }
+      });
+    });
+
+    /* ==========================================================
+       3. HERO 3D CARD & BEAN SELECTOR
+       ========================================================== */
+    const heroCard = document.getElementById('hero3DCard');
+    if (heroCard) {
+      attach3DTilt(heroCard);
+      heroCard.addEventListener('click', () => {
+        const esp = MENU_DATABASE.find(i => i.id === 'espresso');
+        if (esp) openRecipeModal(esp);
+      });
+    }
+
+    const roastPills = document.querySelectorAll('.roast-pill');
+    const heroRoastBadge = document.getElementById('heroRoastBadge');
+    const heroRoastTitle = document.getElementById('heroRoastTitle');
+    const heroRoastDesc = document.getElementById('heroRoastDesc');
+    const selectedRoastNote = document.getElementById('selectedRoastNote');
+
+    const ROAST_PROFILES = {
+      ethiopia: {
+        note: 'Floral & Bergamot',
+        badge: 'Micro-Lot No. 42',
+        title: 'Ethiopian Yirgacheffe',
+        desc: 'Single-origin washed beans with notes of wild jasmine blossoms, sweet apricot & golden honey.'
+      },
+      colombia: {
+        note: 'Caramel & Toffee',
+        badge: 'Volcanic Lot No. 19',
+        title: 'Colombian Huila Estate',
+        desc: 'Medium roasted at 212°C with deep milk chocolate body, crisp fuji apple, and toasted macadamia.'
+      },
+      sumatra: {
+        note: 'Dark Belgian Cacao',
+        badge: 'Heirloom Lot No. 07',
+        title: 'Sumatra Mandheling',
+        desc: 'Wet-hulled organic beans roasted bold for an earthy, syrupy cup with cedar wood and dark molasses notes.'
+      }
+    };
+
+    roastPills.forEach(pill => {
+      pill.addEventListener('click', () => {
+        roastPills.forEach(p => {
+          p.classList.remove('active', 'bg-caramel', 'text-roast');
+          p.classList.add('bg-white/10', 'text-latte');
+        });
+        pill.classList.add('active', 'bg-caramel', 'text-roast');
+        pill.classList.remove('bg-white/10', 'text-latte');
+
+        const data = ROAST_PROFILES[pill.dataset.roast];
+        if (data) {
+          heroRoastBadge.textContent = data.badge;
+          heroRoastTitle.textContent = data.title;
+          heroRoastDesc.textContent = data.desc;
+          selectedRoastNote.textContent = data.note;
+          showToast(`Switched hero spotlight to ${data.title}! ☕`);
+        }
+      });
+    });
+
+    /* ==========================================================
+       4. PROCEDURAL STEAM SIMULATION CANVAS
+       ========================================================== */
+    const canvas = document.getElementById('steamCanvas');
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      let particles = [];
+
+      function resizeCanvas() {
+        canvas.width = canvas.offsetWidth || 320;
+        canvas.height = canvas.offsetHeight || 240;
+      }
+      resizeCanvas();
+      window.addEventListener('resize', resizeCanvas);
+
+      let steamMouseWind = 0;
+      window.addEventListener('mousemove', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        if (e.clientX >= rect.left - 80 && e.clientX <= rect.right + 80 &&
+            e.clientY >= rect.top - 80 && e.clientY <= rect.bottom + 80) {
+          const centerX = rect.left + rect.width / 2;
+          steamMouseWind = (e.clientX - centerX) * 0.015;
+        } else {
+          steamMouseWind *= 0.95;
+        }
+      });
+
+      class SteamParticle {
+        constructor() { this.reset(); }
+        reset() {
+          this.x = canvas.width / 2 + (Math.random() - 0.5) * 50;
+          this.y = canvas.height - 20;
+          this.vx = (Math.random() - 0.5) * 0.7;
+          this.vy = -1.2 - Math.random() * 1.5;
+          this.radius = 12 + Math.random() * 14;
+          this.maxRadius = 36 + Math.random() * 20;
+          this.alpha = 0.25 + Math.random() * 0.25;
+          this.life = 0;
+          this.maxLife = 90 + Math.random() * 60;
+        }
+        update() {
+          this.x += this.vx + Math.sin(this.life * 0.05) * 0.5 + steamMouseWind;
+          this.y += this.vy;
+          this.life++;
+          this.radius += (this.maxRadius - this.radius) * 0.02;
+          this.alpha = (1 - (this.life / this.maxLife)) * 0.35;
+          if (this.life >= this.maxLife || this.y <= 0) this.reset();
+        }
+        draw() {
+          if (this.alpha <= 0) return;
+          ctx.save();
+          const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius);
+          grad.addColorStop(0, `rgba(240, 225, 210, ${this.alpha})`);
+          grad.addColorStop(0.6, `rgba(212, 163, 115, ${this.alpha * 0.35})`);
+          grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+          ctx.fillStyle = grad;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      for (let i = 0; i < 22; i++) {
+        const p = new SteamParticle();
+        p.life = Math.random() * p.maxLife;
+        particles.push(p);
+      }
+
+      function animateSteam() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => { p.update(); p.draw(); });
+        requestAnimationFrame(animateSteam);
+      }
+      animateSteam();
+    }
+
+    /* ==========================================================
+       5. MODAL LOGIC (INGREDIENTS & CUSTOMIZER)
+       ========================================================== */
+    const recipeModal = document.getElementById('recipeModal');
+    const modalSheet = document.getElementById('modalSheet');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const customMilk = document.getElementById('customMilk');
+    const customSweet = document.getElementById('customSweet');
+    let currentModalItem = null;
+    let modalQuantity = 1;
+
+    function openRecipeModal(item) {
+      currentModalItem = item;
+      modalQuantity = 1;
+
+      document.getElementById('modalImg').src = item.img;
+      document.getElementById('modalTitle').textContent = item.name;
+      document.getElementById('modalCategory').textContent = item.badge;
+      document.getElementById('modalDietary').textContent = item.nutrition.dietary;
+      document.getElementById('modalPrice').textContent = `$${item.price.toFixed(2)}`;
+      document.getElementById('modalDesc').textContent = item.desc;
+      document.getElementById('modalCalories').textContent = item.nutrition.calories;
+      document.getElementById('modalCaffeine').textContent = item.nutrition.caffeine;
+      document.getElementById('modalAllergens').textContent = item.nutrition.allergens;
+      document.getElementById('modalOrigin').textContent = item.origin;
+      document.getElementById('modalQtyVal').textContent = '1';
+
+      // Ingredients List
+      const ingredientsEl = document.getElementById('modalIngredients');
+      ingredientsEl.innerHTML = '';
+      item.ingredients.forEach(ing => {
+        const li = document.createElement('li');
+        li.className = 'flex items-start gap-2 bg-cream/70 p-2.5 rounded-xl border border-latte/60';
+        li.innerHTML = `<span class="text-caramel font-bold text-sm">✓</span> <span>${ing}</span>`;
+        ingredientsEl.appendChild(li);
+      });
+
+      // Tasting Notes
+      const notesEl = document.getElementById('modalTastingNotes');
+      notesEl.innerHTML = '';
+      for (const [key, val] of Object.entries(item.tastingNotes)) {
+        const div = document.createElement('div');
+        div.className = 'flex justify-between items-center p-2.5 rounded-xl bg-cream/70 border border-latte/40';
+        div.innerHTML = `<span class="text-mocha/60 font-semibold">${key}</span> <strong class="text-bark">${val}</strong>`;
+        notesEl.appendChild(div);
+      }
+
+      // Hide milk customizer if pastry
+      const customSection = document.getElementById('modalCustomizerSection');
+      if (item.category === 'pastry') {
+        customSection.classList.add('hidden');
+      } else {
+        customSection.classList.remove('hidden');
+      }
+
+      customMilk.value = "0";
+      customSweet.value = "Standard Signature Sweetness (100%)";
+      updateModalPrice();
+
+      // Show modal
+      recipeModal.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+      setTimeout(() => {
+        modalSheet.classList.remove('scale-95', 'opacity-0');
+        modalSheet.classList.add('scale-100', 'opacity-100');
+      }, 20);
+    }
+
+    function closeRecipeModal() {
+      modalSheet.classList.remove('scale-100', 'opacity-100');
+      modalSheet.classList.add('scale-95', 'opacity-0');
+      setTimeout(() => {
+        recipeModal.classList.add('hidden');
+        document.body.style.overflow = '';
+        currentModalItem = null;
+      }, 200);
+    }
+
+    closeModalBtn.addEventListener('click', closeRecipeModal);
+    recipeModal.addEventListener('click', (e) => {
+      if (e.target === recipeModal) closeRecipeModal();
+    });
+
+    function updateModalPrice() {
+      if (!currentModalItem) return;
+      const extraMilk = parseFloat(customMilk.value) || 0;
+      const singlePrice = currentModalItem.price + extraMilk;
+      const total = (singlePrice * modalQuantity).toFixed(2);
+      document.getElementById('modalActionPrice').textContent = `• $${total}`;
+    }
+
+    customMilk.addEventListener('change', updateModalPrice);
+
+    document.getElementById('modalQtyMinus').addEventListener('click', () => {
+      if (modalQuantity > 1) {
+        modalQuantity--;
+        document.getElementById('modalQtyVal').textContent = modalQuantity;
+        updateModalPrice();
+      }
+    });
+    document.getElementById('modalQtyPlus').addEventListener('click', () => {
+      modalQuantity++;
+      document.getElementById('modalQtyVal').textContent = modalQuantity;
+      updateModalPrice();
+    });
+
+    document.getElementById('modalAddCartBtn').addEventListener('click', () => {
+      if (currentModalItem) {
+        const extraMilk = parseFloat(customMilk.value) || 0;
+        const sweetOpt = customSweet.value;
+        addToCart(currentModalItem, modalQuantity, extraMilk, sweetOpt);
+        closeRecipeModal();
+      }
+    });
+
+    /* ==========================================================
+       6. LIVE ORDER BAG (CART DRAWER)
+       ========================================================== */
+    let cart = [];
+    const cartBtn = document.getElementById('cartBtn');
+    const cartCount = document.getElementById('cartCount');
+    const cartDrawer = document.getElementById('cartDrawer');
+    const cartSheet = document.getElementById('cartSheet');
+    const cartBackdrop = document.getElementById('cartBackdrop');
+    const closeCartBtn = document.getElementById('closeCartBtn');
+    const cartItemsList = document.getElementById('cartItemsList');
+    const cartTotalPrice = document.getElementById('cartTotalPrice');
+
+    function openCart() {
+      cartDrawer.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+      renderCartItems();
+      setTimeout(() => {
+        cartBackdrop.classList.remove('opacity-0');
+        cartBackdrop.classList.add('opacity-100');
+        cartSheet.classList.remove('translate-x-full');
+      }, 20);
+    }
+
+    function closeCart() {
+      cartBackdrop.classList.remove('opacity-100');
+      cartBackdrop.classList.add('opacity-0');
+      cartSheet.classList.add('translate-x-full');
+      setTimeout(() => {
+        cartDrawer.classList.add('hidden');
+        document.body.style.overflow = '';
+      }, 300);
+    }
+
+    cartBtn.addEventListener('click', openCart);
+    closeCartBtn.addEventListener('click', closeCart);
+    cartBackdrop.addEventListener('click', closeCart);
+
+    function addToCart(item, qty, extraMilk = 0, sweetness = 'Standard') {
+      const finalPrice = item.price + extraMilk;
+      const cartKey = `${item.id}-${extraMilk}-${sweetness}`;
+      
+      const existing = cart.find(i => i.key === cartKey);
+      if (existing) {
+        existing.qty += qty;
+      } else {
+        cart.push({
+          key: cartKey,
+          id: item.id,
+          name: item.name,
+          img: item.img,
+          price: finalPrice,
+          qty,
+          sweetness: extraMilk > 0 ? `Custom milk (+ $${extraMilk})` : null
+        });
+      }
+      updateCartUI();
+      showToast(`Added ${qty}x ${item.name} to your Order Bag! ☕`);
+    }
+
+    function updateCartUI() {
+      const totalCount = cart.reduce((acc, i) => acc + i.qty, 0);
+      cartCount.textContent = totalCount;
+      renderCartItems();
+    }
+
+    function renderCartItems() {
+      if (cart.length === 0) {
+        cartItemsList.innerHTML = `
+          <div class="text-center py-16 text-mocha/50 text-xs">
+            Your ritual bag is empty.<br/>Click any item in the menu to inspect ingredients and add it!
+          </div>
+        `;
+        cartTotalPrice.textContent = '$0.00';
+        return;
+      }
+
+      cartItemsList.innerHTML = '';
+      let sum = 0;
+
+      cart.forEach(item => {
+        const subtotal = item.price * item.qty;
+        sum += subtotal;
+
+        const div = document.createElement('div');
+        div.className = 'flex items-center gap-3 bg-white p-3 rounded-2xl border border-latte shadow-sm';
+        div.innerHTML = `
+          <img src="${item.img}" alt="${item.name}" class="w-14 h-14 rounded-xl object-cover border border-latte" />
+          <div class="flex-1">
+            <h4 class="font-bold text-xs text-bark">${item.name}</h4>
+            ${item.sweetness ? `<span class="text-[10px] text-mocha/60 block">${item.sweetness}</span>` : ''}
+            <span class="text-xs text-caramel font-semibold">$${item.price.toFixed(2)} each</span>
+          </div>
+          <div class="flex items-center gap-1.5 bg-cream px-2 py-1 rounded-full border border-latte">
+            <button class="cart-minus text-xs font-bold px-1.5 hover:text-caramel cursor-pointer" data-key="${item.key}">-</button>
+            <span class="text-xs font-bold w-4 text-center">${item.qty}</span>
+            <button class="cart-plus text-xs font-bold px-1.5 hover:text-caramel cursor-pointer" data-key="${item.key}">+</button>
+          </div>
+        `;
+        cartItemsList.appendChild(div);
+      });
+
+      cartTotalPrice.textContent = `$${sum.toFixed(2)}`;
+
+      cartItemsList.querySelectorAll('.cart-minus').forEach(b => {
+        b.addEventListener('click', () => {
+          const key = b.dataset.key;
+          const itm = cart.find(i => i.key === key);
+          if (itm) {
+            itm.qty--;
+            if (itm.qty <= 0) cart = cart.filter(i => i.key !== key);
+            updateCartUI();
+          }
+        });
+      });
+      cartItemsList.querySelectorAll('.cart-plus').forEach(b => {
+        b.addEventListener('click', () => {
+          const key = b.dataset.key;
+          const itm = cart.find(i => i.key === key);
+          if (itm) {
+            itm.qty++;
+            updateCartUI();
+          }
+        });
+      });
+    }
+
+    document.getElementById('checkoutBtn').addEventListener('click', () => {
+      if (cart.length === 0) {
+        showToast('Your bag is empty! Add something delicious first. 🥐');
+        return;
+      }
+      const orderNum = Math.floor(100 + Math.random() * 900);
+      showToast(`🎉 Order #${orderNum} confirmed! Barista Bella is preparing your ritual for pickup in 15 min.`);
+      cart = [];
+      updateCartUI();
+      closeCart();
+    });
+
+    /* ==========================================================
+       7. INTERACTIVE POUR-OVER TIMER
+       ========================================================== */
+    const startTimerBtn = document.getElementById('startTimerBtn');
+    const resetTimerBtn = document.getElementById('resetTimerBtn');
+    const timerDisplay = document.getElementById('timerDisplay');
+    const timerPrompt = document.getElementById('timerPrompt');
+    const brewStatusPill = document.getElementById('brewStatusPill');
+    const step1 = document.getElementById('step1');
+    const step2 = document.getElementById('step2');
+    const step3 = document.getElementById('step3');
+
+    let timerInterval = null;
+    let timerSeconds = 0;
+    let isTimerRunning = false;
+
+    function formatTime(s) {
+      const mins = Math.floor(s / 60);
+      const secs = s % 60;
+      return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    function updateTimerUI() {
+      timerDisplay.textContent = formatTime(timerSeconds);
+
+      [step1, step2, step3].forEach(s => {
+        s.classList.remove('bg-caramel/25', 'border-caramel');
+        s.classList.add('bg-white/5', 'border-white/10');
+      });
+
+      if (timerSeconds <= 45) {
+        step1.classList.add('bg-caramel/25', 'border-caramel');
+        timerPrompt.textContent = 'Stage 1: Pour 50g water & let coffee bloom';
+        brewStatusPill.textContent = 'Blooming (0:00 - 0:45)';
+      } else if (timerSeconds <= 90) {
+        step2.classList.add('bg-caramel/25', 'border-caramel');
+        timerPrompt.textContent = 'Stage 2: Continuous gentle spiral pour up to 200g';
+        brewStatusPill.textContent = 'Main Pour (0:45 - 1:30)';
+      } else if (timerSeconds <= 150) {
+        step3.classList.add('bg-caramel/25', 'border-caramel');
+        timerPrompt.textContent = 'Stage 3: Final pour up to 300g & let bed draw down';
+        brewStatusPill.textContent = 'Drawdown (1:30 - 2:30)';
+      } else {
+        step3.classList.add('bg-caramel/25', 'border-caramel');
+        timerPrompt.textContent = '✨ Extraction complete! Pour into warm ceramic & enjoy.';
+        brewStatusPill.textContent = 'Complete (2:30)';
+        clearInterval(timerInterval);
+        isTimerRunning = false;
+        startTimerBtn.textContent = 'Start Ritual';
+      }
+    }
+
+    startTimerBtn.addEventListener('click', () => {
+      if (!isTimerRunning) {
+        isTimerRunning = true;
+        startTimerBtn.textContent = 'Pause';
+        brewStatusPill.textContent = 'Extracting...';
+        timerInterval = setInterval(() => {
+          timerSeconds++;
+          updateTimerUI();
+        }, 1000);
+      } else {
+        isTimerRunning = false;
+        startTimerBtn.textContent = 'Resume';
+        clearInterval(timerInterval);
+        brewStatusPill.textContent = 'Paused';
+      }
+    });
+
+    resetTimerBtn.addEventListener('click', () => {
+      clearInterval(timerInterval);
+      isTimerRunning = false;
+      timerSeconds = 0;
+      startTimerBtn.textContent = 'Start Ritual';
+      brewStatusPill.textContent = 'Ready';
+      timerPrompt.textContent = 'Press Start to begin blooming';
+      updateTimerUI();
+    });
+
+    /* ==========================================================
+       8. AUDIO PLAYER: RELAXING SMOOTH CAFE VIBES
+       ========================================================== */
+    const ambientSoundBtn = document.getElementById('ambientSoundBtn');
+    const soundIcon = document.getElementById('soundIcon');
+    const soundText = document.getElementById('soundText');
+    const soundEqualizer = document.getElementById('soundEqualizer');
+    const musicAudio = document.getElementById('musicAudio');
+    
+    // Balanced soothing acoustic volume
+    musicAudio.volume = 0.35;     // Relaxing, smooth mellow cafe vibes
+
+    let isPlayingAudio = false;
+
+    ambientSoundBtn.addEventListener('click', () => {
+      if (!isPlayingAudio) {
+        musicAudio.play().then(() => {
+          isPlayingAudio = true;
+          soundIcon.classList.add('hidden');
+          soundEqualizer.classList.remove('hidden');
+          soundEqualizer.classList.add('flex');
+          soundText.textContent = 'Ambience Playing';
+          ambientSoundBtn.classList.remove('bg-latte/50', 'text-bark');
+          ambientSoundBtn.classList.add('bg-caramel', 'text-roast', 'shadow-md', 'font-bold');
+          showToast('☕ Playing relaxing smooth cafe vibe music 🎵');
+        }).catch(err => {
+          console.warn('Media play issue, falling back to gentle synth sound:', err);
+          playSynthAmbience();
+        });
+      } else {
+        musicAudio.pause();
+        if (synthAudioCtx) {
+          synthAudioCtx.close();
+          synthAudioCtx = null;
+        }
+        isPlayingAudio = false;
+        soundEqualizer.classList.add('hidden');
+        soundEqualizer.classList.remove('flex');
+        soundIcon.classList.remove('hidden');
+        soundIcon.textContent = '☕';
+        soundText.textContent = 'Cafe Ambience';
+        ambientSoundBtn.classList.remove('bg-caramel', 'text-roast', 'shadow-md', 'font-bold');
+        ambientSoundBtn.classList.add('bg-latte/50', 'text-bark');
+        showToast('Cafe ambience muted ☕');
+      }
+    });
+
+    // Fallback synth
+    let synthAudioCtx = null;
+    function playSynthAmbience() {
+      try {
+        synthAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const bufferSize = synthAudioCtx.sampleRate * 2;
+        const noiseBuffer = synthAudioCtx.createBuffer(1, bufferSize, synthAudioCtx.sampleRate);
+        const output = noiseBuffer.getChannelData(0);
+        let b0 = 0, b1 = 0, b2 = 0;
+        for (let i = 0; i < bufferSize; i++) {
+          const white = Math.random() * 2 - 1;
+          b0 = 0.99 * b0 + white * 0.05;
+          b1 = 0.96 * b1 + white * 0.11;
+          b2 = 0.86 * b2 + white * 0.25;
+          output[i] = (b0 + b1 + b2) * 0.08;
+        }
+        const noiseNode = synthAudioCtx.createBufferSource();
+        noiseNode.buffer = noiseBuffer;
+        noiseNode.loop = true;
+
+        const filter = synthAudioCtx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.value = 420;
+
+        const osc1 = synthAudioCtx.createOscillator();
+        osc1.type = 'sine';
+        osc1.frequency.value = 146.83; // D3 note
+
+        const chordGain = synthAudioCtx.createGain();
+        chordGain.gain.value = 0.015;
+
+        const gainNode = synthAudioCtx.createGain();
+        gainNode.gain.value = 0.35;
+
+        noiseNode.connect(filter);
+        filter.connect(gainNode);
+        osc1.connect(chordGain);
+        chordGain.connect(gainNode);
+        gainNode.connect(synthAudioCtx.destination);
+
+        noiseNode.start();
+        osc1.start();
+
+        isPlayingAudio = true;
+        soundIcon.classList.add('hidden');
+        soundEqualizer.classList.remove('hidden');
+        soundEqualizer.classList.add('flex');
+        soundText.textContent = 'Ambience Playing';
+        ambientSoundBtn.classList.remove('bg-latte/50', 'text-bark');
+        ambientSoundBtn.classList.add('bg-caramel', 'text-roast', 'shadow-md', 'font-bold');
+        showToast('☕ Playing soothing coffee room ambience');
+      } catch (e) {
+        showToast('Could not start audio in this browser context.');
+      }
+    }
+
+    /* ==========================================================
+       9. TOAST FEEDBACK
+       ========================================================== */
+    const toast = document.getElementById('toast');
+    const toastMsg = document.getElementById('toastMsg');
+    let toastTimeout = null;
+
+    function showToast(message) {
+      toastMsg.textContent = message;
+      toast.classList.remove('translate-y-24', 'opacity-0');
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.add('translate-y-24', 'opacity-0');
+      }, 3500);
+    }
+
+    /* ==========================================================
+       10. CONTACT FORM SUBMISSION
+       ========================================================== */
+    const contactForm = document.getElementById('contactForm');
+    if (contactForm) {
+      contactForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        showToast('Message received! We will reply within 24 hours. ☕');
+        contactForm.reset();
+      });
+    }
+
+    /* ==========================================================
+       11. MOBILE NAVBAR TOGGLE & SCROLL REVEAL
+       ========================================================== */
+    const mobileToggle = document.getElementById('mobileToggle');
+    const mobileMenu = document.getElementById('mobileMenu');
+    if (mobileToggle) {
+      mobileToggle.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+      });
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    /* ==========================================================
+       12. CREATIVE COFFEE SHOP MOUSE MOVEMENT & HOVER SYSTEM
+       ========================================================== */
+    (function initCoffeeMouseExperience() {
+      // Check if fine pointer is available (desktop / mouse)
+      if (!window.matchMedia('(pointer: fine)').matches) return;
+
+      const cursorCanvas = document.getElementById('coffeeCursorCanvas');
+      const baristaRing = document.getElementById('baristaRing');
+      const baristaHoverTag = document.getElementById('baristaHoverTag');
+      if (!cursorCanvas || !baristaRing) return;
+
+      const ctx = cursorCanvas.getContext('2d');
+      let width = cursorCanvas.width = window.innerWidth;
+      let height = cursorCanvas.height = window.innerHeight;
+
+      window.addEventListener('resize', () => {
+        width = cursorCanvas.width = window.innerWidth;
+        height = cursorCanvas.height = window.innerHeight;
+      });
+
+      let mouse = { x: width / 2, y: height / 2, speed: 0 };
+      let ringPos = { x: width / 2, y: height / 2 };
+      let isMouseOnScreen = false;
+      let particles = [];
+      let lastMoveTime = 0;
+      let beanCounter = 0;
+
+      // Particle class: Steam vapor, roasted coffee bean, golden spark, latte ripple
+      class CoffeeParticle {
+        constructor(x, y, type = 'steam', vx = 0, vy = 0) {
+          this.x = x;
+          this.y = y;
+          this.type = type; // 'steam' | 'bean' | 'spark' | 'ripple'
+          this.life = 0;
+
+          if (this.type === 'steam') {
+            this.vx = (Math.random() - 0.5) * 0.6 + vx * 0.15;
+            this.vy = -0.8 - Math.random() * 1.3;
+            this.radius = 5 + Math.random() * 8;
+            this.maxRadius = this.radius * (2.2 + Math.random() * 1.2);
+            this.maxLife = 40 + Math.random() * 25;
+            this.alpha = 0.32 + Math.random() * 0.22;
+            this.color = Math.random() > 0.4 ? 'rgba(234, 219, 206,' : 'rgba(212, 163, 115,';
+          } else if (this.type === 'bean') {
+            this.vx = (Math.random() - 0.5) * 1.8 + vx * 0.25;
+            this.vy = -0.8 - Math.random() * 1.4 + vy * 0.2;
+            this.size = 5.5 + Math.random() * 3.5;
+            this.rotation = Math.random() * Math.PI * 2;
+            this.rotSpeed = (Math.random() - 0.5) * 0.08;
+            this.maxLife = 50 + Math.random() * 20;
+            this.alpha = 0.85;
+            this.gravity = 0.035;
+          } else if (this.type === 'spark') {
+            this.vx = (Math.random() - 0.5) * 2;
+            this.vy = (Math.random() - 0.5) * 2 - 0.5;
+            this.radius = 1.2 + Math.random() * 1.8;
+            this.maxLife = 25 + Math.random() * 15;
+            this.alpha = 0.9;
+          } else if (this.type === 'ripple') {
+            this.radius = 6;
+            this.maxRadius = 65 + Math.random() * 25;
+            this.maxLife = 45;
+            this.alpha = 0.7;
+          }
+        }
+
+        update() {
+          this.life++;
+          const progress = this.life / this.maxLife;
+
+          if (this.type === 'steam') {
+            this.x += this.vx + Math.sin(this.life * 0.1) * 0.4;
+            this.y += this.vy;
+            this.radius += (this.maxRadius - this.radius) * 0.04;
+            this.currentAlpha = this.alpha * (1 - progress);
+          } else if (this.type === 'bean') {
+            this.x += this.vx;
+            this.y += this.vy;
+            this.vy += this.gravity;
+            this.rotation += this.rotSpeed;
+            this.currentAlpha = this.alpha * (1 - Math.pow(progress, 1.8));
+          } else if (this.type === 'spark') {
+            this.x += this.vx;
+            this.y += this.vy;
+            this.currentAlpha = this.alpha * (1 - progress);
+          } else if (this.type === 'ripple') {
+            this.radius += (this.maxRadius - this.radius) * 0.08;
+            this.currentAlpha = this.alpha * (1 - progress);
+          }
+
+          return this.life < this.maxLife;
+        }
+
+        draw(ctx) {
+          if (this.currentAlpha <= 0) return;
+
+          if (this.type === 'steam') {
+            ctx.save();
+            const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius);
+            grad.addColorStop(0, `${this.color} ${this.currentAlpha})`);
+            grad.addColorStop(0.6, `${this.color} ${this.currentAlpha * 0.35})`);
+            grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+          } else if (this.type === 'bean') {
+            // Draw miniature roasted coffee bean with signature center cleft
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            ctx.rotate(this.rotation);
+            ctx.globalAlpha = Math.max(0, this.currentAlpha);
+
+            // Outer bean body (warm dark roast)
+            ctx.fillStyle = '#3B2418';
+            ctx.beginPath();
+            ctx.ellipse(0, 0, this.size, this.size * 0.65, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Warm golden-caramel roast perimeter
+            ctx.strokeStyle = '#D4A373';
+            ctx.lineWidth = 0.8;
+            ctx.stroke();
+
+            // Center S-curve cleft crease
+            ctx.strokeStyle = '#1A110B';
+            ctx.lineWidth = 1.2;
+            ctx.beginPath();
+            ctx.moveTo(-this.size * 0.7, 0);
+            ctx.quadraticCurveTo(0, this.size * 0.35, this.size * 0.7, 0);
+            ctx.stroke();
+
+            ctx.restore();
+          } else if (this.type === 'spark') {
+            ctx.save();
+            ctx.globalAlpha = Math.max(0, this.currentAlpha);
+            ctx.fillStyle = '#E3A857';
+            ctx.shadowColor = '#E3A857';
+            ctx.shadowBlur = 6;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+          } else if (this.type === 'ripple') {
+            // Delicate latte art crema ripple ring
+            ctx.save();
+            ctx.globalAlpha = Math.max(0, this.currentAlpha);
+            ctx.strokeStyle = '#D4A373';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Inner foam echo
+            if (this.radius > 16) {
+              ctx.strokeStyle = 'rgba(255, 253, 249, 0.4)';
+              ctx.lineWidth = 1;
+              ctx.beginPath();
+              ctx.arc(this.x, this.y, this.radius * 0.65, 0, Math.PI * 2);
+              ctx.stroke();
+            }
+            ctx.restore();
+          }
+        }
+      }
+
+      // Mouse Move Event Listener
+      window.addEventListener('mousemove', (e) => {
+        isMouseOnScreen = true;
+        baristaRing.style.opacity = '1';
+
+        const dx = e.clientX - mouse.x;
+        const dy = e.clientY - mouse.y;
+        mouse.speed = Math.hypot(dx, dy);
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
+
+        const now = performance.now();
+        if (now - lastMoveTime > 25 && mouse.speed > 2) {
+          lastMoveTime = now;
+
+          // Spawn warm aroma steam wisp
+          particles.push(new CoffeeParticle(mouse.x, mouse.y, 'steam', dx * 0.05, dy * 0.05));
+
+          // Occasionally spawn a roasted coffee bean
+          beanCounter++;
+          if (beanCounter % 5 === 0 || mouse.speed > 28) {
+            particles.push(new CoffeeParticle(mouse.x, mouse.y, 'bean', dx * 0.06, dy * 0.06));
+          }
+
+          // Golden sparkle
+          if (Math.random() > 0.65) {
+            particles.push(new CoffeeParticle(mouse.x, mouse.y, 'spark'));
+          }
+
+          // Limit particles to preserve silky smooth 60fps
+          if (particles.length > 90) particles.splice(0, 15);
+        }
+      });
+
+      // Mouse Click: Latte Art Ripple Burst
+      window.addEventListener('click', (e) => {
+        // Expand ripple
+        particles.push(new CoffeeParticle(e.clientX, e.clientY, 'ripple'));
+        // Burst 4 mini coffee beans
+        for (let i = 0; i < 4; i++) {
+          const angle = (i / 4) * Math.PI * 2 + Math.random() * 0.5;
+          const spd = 2 + Math.random() * 2;
+          particles.push(new CoffeeParticle(e.clientX, e.clientY, 'bean', Math.cos(angle) * spd, Math.sin(angle) * spd));
+        }
+      });
+
+      window.addEventListener('mouseleave', () => {
+        isMouseOnScreen = false;
+        baristaRing.style.opacity = '0';
+      });
+
+      // Interactive hover feedback on clickable cafe elements
+      const hoverTargets = [
+        { selector: '.tilt-card', tag: '✨ Inspect Recipe' },
+        { selector: '#hero3DCard', tag: '☕ Signature Cup' },
+        { selector: '.roast-pill', tag: '🌱 Switch Roast' },
+        { selector: '#ambientSoundBtn', tag: '🎵 Cafe Vibes' },
+        { selector: '#cartBtn', tag: '🛍️ Order Bag' },
+        { selector: '.quick-add-btn', tag: '➕ Quick Add' },
+        { selector: '#startTimerBtn', tag: '⏱️ Pour Ritual' },
+        { selector: 'button', tag: '☕ Tap' },
+        { selector: 'a', tag: '✦ Explore' }
+      ];
+
+      hoverTargets.forEach(({ selector, tag }) => {
+        document.querySelectorAll(selector).forEach(el => {
+          el.addEventListener('mouseenter', () => {
+            baristaRing.classList.add('active-hover');
+            if (baristaHoverTag) baristaHoverTag.textContent = tag;
+          });
+          el.addEventListener('mouseleave', () => {
+            baristaRing.classList.remove('active-hover');
+          });
+        });
+      });
+
+      // Hero Mouse 3D Depth Parallax
+      const heroSection = document.querySelector('.hero-mesh');
+      const floatingBadge = document.querySelector('.animate-float-slow');
+      const floatingRating = document.querySelector('.animate-float-delay');
+
+      if (heroSection) {
+        heroSection.addEventListener('mousemove', (e) => {
+          const rect = heroSection.getBoundingClientRect();
+          const centerX = rect.width / 2;
+          const centerY = rect.height / 2;
+          const deltaX = (e.clientX - rect.left - centerX) / centerX;
+          const deltaY = (e.clientY - rect.top - centerY) / centerY;
+
+          if (floatingBadge) {
+            floatingBadge.style.transform = `translate(${deltaX * -15}px, ${deltaY * -15}px)`;
+          }
+          if (floatingRating) {
+            floatingRating.style.transform = `translate(${deltaX * 18}px, ${deltaY * 18}px)`;
+          }
+        });
+
+        heroSection.addEventListener('mouseleave', () => {
+          if (floatingBadge) floatingBadge.style.transform = '';
+          if (floatingRating) floatingRating.style.transform = '';
+        });
+      }
+
+      // Smooth Animation Loop
+      function renderCursorSystem() {
+        ctx.clearRect(0, 0, width, height);
+
+        // Update and draw all particles
+        particles = particles.filter(p => {
+          const alive = p.update();
+          if (alive) p.draw(ctx);
+          return alive;
+        });
+
+        // Smooth Barista Ring tracking with lerp
+        if (isMouseOnScreen) {
+          ringPos.x += (mouse.x - ringPos.x) * 0.22;
+          ringPos.y += (mouse.y - ringPos.y) * 0.22;
+          baristaRing.style.left = `${ringPos.x}px`;
+          baristaRing.style.top = `${ringPos.y}px`;
+        }
+
+        requestAnimationFrame(renderCursorSystem);
+      }
+      renderCursorSystem();
+    })();
+  </script>
+</body>
+</html>
